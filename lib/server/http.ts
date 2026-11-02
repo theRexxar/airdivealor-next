@@ -26,12 +26,26 @@ export function handle<A extends unknown[]>(fn: (req: Request, ...a: A) => Promi
   };
 }
 
-/** Cross-site request protection for cookie-authenticated writes: the Origin must be this site. */
+/**
+ * Cross-site request protection for cookie-authenticated writes: the browser's Origin must be the host the
+ * request was sent to, or SITE_URL. Hosts are compared, not schemes: behind a proxy (Railway, Caddy) HTTPS
+ * ends at the edge, so the app sees http:// while the browser sends an https:// Origin. A cross-site page
+ * cannot fake Host or X-Forwarded-Host on a browser request, so the check still stops cross-site writes.
+ */
 function checkOrigin(req: Request) {
   const origin = req.headers.get("origin");
   if (!origin) return; // same-origin fetches from older browsers and server-side calls
-  const self = new URL(req.url).origin;
-  if (origin !== self && origin !== new URL(env.SITE_URL).origin) throw new HttpError(403, "Request blocked: wrong origin.");
+  let from: string;
+  try {
+    from = new URL(origin).host.toLowerCase();
+  } catch {
+    throw new HttpError(403, "Request blocked: wrong origin.");
+  }
+  const forwarded = req.headers.get("x-forwarded-host")?.split(",")[0].trim();
+  const allowed = new Set(
+    [forwarded, req.headers.get("host"), new URL(req.url).host, new URL(env.SITE_URL).host].filter((h): h is string => !!h).map((h) => h.toLowerCase()),
+  );
+  if (!allowed.has(from)) throw new HttpError(403, "Request blocked: wrong origin.");
 }
 
 export async function body<T extends z.ZodTypeAny>(req: Request, schema: T): Promise<z.infer<T>> {
