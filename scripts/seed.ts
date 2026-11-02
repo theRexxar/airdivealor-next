@@ -12,8 +12,9 @@ import { COLLECTIONS, PAGES } from "../lib/cms/registry";
 import { DEFAULT_ROLES, PERMISSION_KEYS } from "../lib/cms/permissions";
 import { db, schema } from "../lib/server/db";
 import { env } from "../lib/server/env";
-import { enqueueMedia, mediaQueue } from "../lib/server/queue";
-import { ensureBucket, putObject } from "../lib/server/storage";
+import { importMediaBytes, mapMediaRefs } from "../lib/server/media-import";
+import { mediaQueue } from "../lib/server/queue";
+import { ensureBucket } from "../lib/server/storage";
 import bcrypt from "bcryptjs";
 
 const MIME: Record<string, string> = { ".webp": "image/webp", ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".png": "image/png" };
@@ -65,42 +66,18 @@ async function importLocal(url: string, cache: Map<string, number>): Promise<num
   const mime = MIME[extname(url).toLowerCase()];
   if (!mime) return null;
   const bytes = await readFile(join(process.cwd(), "public", url));
-  const name = url.split("/").pop()!;
-  // Reuse a file imported by an earlier seed run.
-  const existing = await db.query.media.findFirst({ where: and(eq(schema.media.originalName, name), eq(schema.media.size, bytes.length), ne(schema.media.status, "failed")) });
-  if (existing) {
-    cache.set(url, existing.id);
-    return existing.id;
-  }
-  const [res] = await db.insert(schema.media).values({ kind: "image", status: "processing", originalKey: "pending", originalName: name, mime, size: bytes.length });
-  const key = `originals/${res.insertId}/${name}`;
-  await putObject(key, bytes, mime);
-  await db.update(schema.media).set({ originalKey: key }).where(eq(schema.media.id, res.insertId));
-  await enqueueMedia(res.insertId);
-  cache.set(url, res.insertId);
-  console.info(`media ${res.insertId}: ${url}`);
-  return res.insertId;
+  const { id, reused } = await importMediaBytes(url.split("/").pop()!, bytes, mime);
+  cache.set(url, id);
+  if (!reused) console.info(`media ${id}: ${url}`);
+  return id;
 }
 
 /** Walk section content and swap local image URLs for media library ids. */
-async function importMedia(value: unknown, cache: Map<string, number>): Promise<unknown> {
-  if (Array.isArray(value)) {
-    const out = [];
-    for (const v of value) out.push(await importMedia(v, cache)); // one at a time, so a photo used twice is imported once
-    return out;
-  }
-  if (value && typeof value === "object") {
-    const o = value as Record<string, unknown>;
-    if ("mediaId" in o && "url" in o && typeof o.url === "string") {
-      const id = await importLocal(o.url, cache);
-      return id ? { mediaId: id, url: "" } : o;
-    }
-    const out: Record<string, unknown> = {};
-    for (const [k, v] of Object.entries(o)) out[k] = await importMedia(v, cache);
-    return out;
-  }
-  return value;
-}
+const importMedia = (value: unknown, cache: Map<string, number>) =>
+  mapMediaRefs(value, async (ref) => {
+    const id = ref.mediaId ? null : await importLocal(ref.url, cache);
+    return id ? { mediaId: id, url: "" } : ref;
+  });
 
 async function seedPages(cache: Map<string, number>) {
   for (const def of PAGES) {
