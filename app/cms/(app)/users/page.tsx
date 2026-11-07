@@ -99,12 +99,12 @@ export default function UsersPage() {
           </table>
         </div>
       </div>
-      {editing && <UserForm user={editing === "new" ? null : editing} roles={roles} isMe={editing !== "new" && editing.id === me.id} onClose={() => setEditing(null)} onSaved={async (msg) => { setEditing(null); toast(msg); await load(); }} />}
+      {editing && <UserForm user={editing === "new" ? null : editing} roles={roles} isMe={editing !== "new" && editing.id === me.id} onClose={() => setEditing(null)} onSaved={async (msg, warn) => { setEditing(null); toast(msg, warn); await load(); }} />}
     </>
   );
 }
 
-function UserForm({ user, roles, isMe, onClose, onSaved }: { user: User | null; roles: Role[]; isMe: boolean; onClose: () => void; onSaved: (msg: string) => void }) {
+function UserForm({ user, roles, isMe, onClose, onSaved }: { user: User | null; roles: Role[]; isMe: boolean; onClose: () => void; onSaved: (msg: string, warn?: boolean) => void }) {
   const [name, setName] = useState(user?.name ?? "");
   const [email, setEmail] = useState(user?.email ?? "");
   const [roleIds, setRoleIds] = useState<number[]>(user?.roles.map((r) => r.id) ?? []);
@@ -120,8 +120,9 @@ function UserForm({ user, roles, isMe, onClose, onSaved }: { user: User | null; 
         await api(`/api/cms/users/${user.id}`, { method: "PATCH", body: { name, roleIds, ...(status !== "invited" && status !== user.status ? { status } : {}) } });
         onSaved("User updated.");
       } else {
-        await api("/api/cms/users", { body: { name, email, roleIds } });
-        onSaved(`Invitation sent to ${email}.`);
+        const r = await api<{ emailSent: boolean; emailError?: string }>("/api/cms/users", { body: { name, email, roleIds } });
+        if (r.emailSent) onSaved(`Invitation sent to ${email}.`);
+        else onSaved(r.emailError ?? "The user was added, but the invitation email couldn't be sent.", true);
       }
     } catch (e) {
       setErr(e instanceof ApiError ? e : new ApiError(0, "Something went wrong."));

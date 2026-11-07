@@ -114,7 +114,10 @@ Limits are 25 MB per image and 300 MB per video. Browsers upload directly, so th
 ## Users and permissions (RBAC)
 
 - **Users** are invited by email and set their own password from the invitation link (valid 7 days).
-- **Forgot password** emails a one-time link valid for 1 hour, sent through Brevo. Without `BREVO_API_KEY`, emails are printed to the server log instead.
+- **Forgot password** emails a one-time link valid for 1 hour, sent through Brevo. Asking again cancels the earlier link, and the form answers the same way whether or not the address has an account.
+- **Password changed:** after a reset, or a change in Account settings, the owner gets an email, so they notice if it wasn't them. A reset also signs out every other device.
+- **Emails** (invitation, password reset, password changed) are in English and Indonesian, with an HTML and a plain-text version (`lib/server/emails.ts`). **CMS › Email** (Super admin, or anyone with "Invite, edit and disable users") shows whether Brevo is connected, previews every template, and sends a test to yourself. Without `BREVO_API_KEY`, emails are printed to the server log instead.
+- **If an invitation email fails**, the user is still added: the CMS says so, and "Resend invite" sends a fresh link (earlier links stop working).
 - **Roles** are sets of permissions, and a user gets every permission from all their roles. Permissions:
   - per page (Home, Dive sites, Facilities and rates, Dive courses, About us, Blog): view, one edit permission per section, publish, change layout
   - per collection (Dive site guides, Dive course packages, Blog stories, Blog categories): view, add/edit drafts, publish/hide/unpublish/reorder, delete
