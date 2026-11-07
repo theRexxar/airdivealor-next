@@ -17,7 +17,10 @@ Why these choices:
 ## 1. Create the project
 
 1. In Railway, create a new project. Add the **GitHub repo** `theRexxar/airdivealor-next` (branch `main`) and rename the service to **web**.
-2. Add the repo again as a second service, named **worker**. In **Settings → Config-as-code**, set the path to `railway.worker.json`.
+2. Add the repo again as a second service, named **worker**. In **Settings → Config-as-code → Railway config file**, set the path to `/railway.worker.json`, with the leading slash.
+   - **Don't skip this.** Without it, the worker reads the default `railway.json` and starts the website instead of the worker.
+   - Config files override the dashboard, so changing only the start command in the dashboard doesn't help.
+   - The worker doesn't need a public domain.
 3. Add **MySQL** and **Redis** from **New → Database**.
 4. Add **MinIO**: **New → Docker image** `chainguard/minio:latest` (the official `minio/minio` image is no longer published on Docker Hub). Name it **MinIO**, then:
    - **Start command:** `minio server /data --address :9000 --console-address :9001`
@@ -25,7 +28,7 @@ Why these choices:
    - **Variables:**
      - `MINIO_ROOT_USER`: any name, e.g. `airdive-media`
      - `MINIO_ROOT_PASSWORD`: a long random value
-     - `MINIO_API_CORS_ALLOW_ORIGIN`: `https://airdivealor.com`
+     - `MINIO_API_CORS_ALLOW_ORIGIN`: every address the CMS is opened from, comma-separated, e.g. `https://airdivealor.com,https://new.airdivealor.com`. Uploads from an address that isn't listed stay at **Uploading**.
    - **Networking:** add a public domain on port `9000`. Later, add the custom domain `media.airdivealor.com`.
 5. Use a region close to Indonesia (Southeast Asia / Singapore) for all services.
 
@@ -67,14 +70,20 @@ Before `media.airdivealor.com` is live, you can test with MinIO's Railway domain
 ## 3. First deploy
 
 1. Deploy **web** and **worker**. On every deploy, web runs `npm run db:migrate` before it starts (the pre-deploy command in `railway.json`).
-2. Open a shell in web with the Railway CLI, `railway ssh` (select the web service), and run:
+2. **Check that the worker really is the worker.** Its deploy **Details** should show the start command `npm run worker`, and its **Deploy Logs** should show `[worker] waiting for media jobs`.
+   - If the logs show `▲ Next.js … Ready`, the worker is running the website: fix the config file path from step 1.2 and redeploy.
+   - Jobs queued in the meantime are processed as soon as the real worker starts.
+3. Open a shell in web with the Railway CLI, `railway ssh` (select the web service), and run:
    - `npm run cms:seed`: roles, the first admin, all page content, dive sites, courses, blog stories and categories, plus the local photos.
    - `npm run cms:import-remote -- --dry-run`: lists the images still hotlinked from the old `airdivealor.com` and Wix (about 60), and the old-blog links.
    - `npm run cms:import-remote`: copies those images into the media library. This **must run before DNS moves**, while the old site still answers at `airdivealor.com`.
-3. Open web's Railway domain (`https://<web>.up.railway.app`) and check:
+4. Open web's Railway domain (`https://<web>.up.railway.app`) and check:
    - Every page loads, and `/api/health` returns `{"ok":true,...}`.
    - Sign in at `/cms`, change the admin password, and invite the other users.
-   - Upload a photo and a short video in **Media**. Both should reach **ready**, which shows the worker and ffmpeg are working.
+   - Upload a photo and a short video in **Media**. Both should reach **Ready**, and the worker logs show `[worker] media <id> ready`.
+     - Stuck at **Uploading**: the browser couldn't upload to MinIO. Check `MINIO_API_CORS_ALLOW_ORIGIN` and `S3_UPLOAD_ENDPOINT`.
+     - Stuck at **Processing**: the worker isn't taking jobs. Check its logs (step 2) and that web and worker use the same `REDIS_URL`.
+     - **Failed**: the worker ran but hit an error; the error is shown on the file and in the worker logs.
    - Publish a change; it shows on the site straight away.
 
 ## 4. Move airdivealor.com
