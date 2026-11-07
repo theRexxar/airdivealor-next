@@ -22,7 +22,12 @@ export const POST = handle(async (req) => {
   if (roles.some((r) => r.isSystem) && !(await activeSuperAdmins()).includes(me.id)) throw new HttpError(403, "Only a Super admin can give the Super admin role.");
   const [res] = await db.insert(schema.users).values({ email: data.email, name: data.name, status: "invited" });
   await setUserRoles(res.insertId, data.roleIds);
-  await sendPasswordLink({ id: res.insertId, email: data.email, name: data.name }, "invite", me.name);
   await audit(me.id, "user.invited", data.email, { roles: roles.map((r) => r.name) });
-  return ok({ id: res.insertId }, 201);
+  try {
+    await sendPasswordLink({ id: res.insertId, email: data.email, name: data.name }, "invite", me.name);
+  } catch (e) {
+    console.error("invitation email failed", e);
+    return ok({ id: res.insertId, emailSent: false, emailError: "The user was added, but the invitation email couldn't be sent. Check the email settings, then use “Resend invite”." }, 201);
+  }
+  return ok({ id: res.insertId, emailSent: true }, 201);
 });

@@ -4,7 +4,7 @@ import { audit } from "@/lib/server/audit";
 import { createSession, hashPassword, passwordProblem } from "@/lib/server/auth";
 import { db, schema } from "@/lib/server/db";
 import { body, handle, HttpError, ok, rateLimit } from "@/lib/server/http";
-import { findToken } from "@/lib/server/password-flow";
+import { findToken, notifyPasswordChanged } from "@/lib/server/password-flow";
 
 /** GET checks a link before showing the form; POST sets the password (reset or accepting an invitation). */
 export const GET = handle(async (req) => {
@@ -30,5 +30,6 @@ export const POST = handle(async (req) => {
   await db.delete(schema.sessions).where(and(eq(schema.sessions.userId, u.id), ne(schema.sessions.id, "")));
   await createSession(u.id);
   await audit(u.id, t.kind === "invite" ? "auth.invite_accepted" : "auth.password_reset");
+  if (t.kind === "reset") await notifyPasswordChanged(u, "reset");
   return ok({ ok: true });
 });

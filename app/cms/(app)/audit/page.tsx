@@ -12,7 +12,7 @@ interface Entry { id: number; action: string; target: string; meta: Record<strin
 
 const LABELS: Record<string, string> = {
   "auth.login": "Signed in", "auth.logout": "Signed out", "auth.login_failed": "Failed sign-in", "auth.reset_requested": "Asked for a password reset",
-  "auth.password_reset": "Reset password", "auth.invite_accepted": "Accepted invitation", "auth.password_changed": "Changed password",
+  "auth.password_reset": "Reset password", "email.test_sent": "Sent a test email", "auth.invite_accepted": "Accepted invitation", "auth.password_changed": "Changed password",
   "user.invited": "Invited user", "user.invite_resent": "Resent invitation", "user.updated": "Updated user", "user.deleted": "Deleted user",
   "role.created": "Created role", "role.updated": "Updated role", "role.deleted": "Deleted role",
   "home.draft_saved": "Saved Home draft", "home.draft_discarded": "Discarded Home draft", "home.published": "Published Home", "home.layout_changed": "Changed Home section order",

@@ -17,6 +17,7 @@ const NAV: { group: string; items: { href: string; label: string; icon: IconName
     items: [
       { href: "/cms/users", label: "Users", icon: "users", perm: "users.view" },
       { href: "/cms/roles", label: "Roles and permissions", icon: "shield-check", perm: "users.view" },
+      { href: "/cms/email", label: "Email", icon: "mail", perm: "users.manage" },
       { href: "/cms/audit", label: "Activity log", icon: "history", perm: "audit.view" },
     ],
   },
