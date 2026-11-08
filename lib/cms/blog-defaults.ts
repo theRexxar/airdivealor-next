@@ -151,6 +151,7 @@ export const CATEGORIES_DEFAULTS: CategoryContent[] = [
 export const POSTS_DEFAULTS: PostContent[] = [
  {
   "slug": "beach-cleanup",
+  "slugId": "minggu-bersih-pantai-bersama-anak-anak-alor-kecil",
   "title": {
    "en": "Beach cleanup Sunday with the children of Alor Kecil",
    "id": "Minggu bersih pantai bersama anak-anak Alor Kecil"
@@ -175,6 +176,7 @@ export const POSTS_DEFAULTS: PostContent[] = [
  },
  {
   "slug": "english-class",
+  "slugId": "kelas-bahasa-inggris-kami-di-alam-terbuka",
   "title": {
    "en": "Our open-air English class",
    "id": "Kelas bahasa Inggris kami di alam terbuka"
@@ -199,6 +201,7 @@ export const POSTS_DEFAULTS: PostContent[] = [
  },
  {
   "slug": "dive-and-stay",
+  "slugId": "sekarang-anda-bisa-menyelam-dan-menginap-bersama-kami",
   "title": {
    "en": "Now you can dive and stay with us",
    "id": "Sekarang Anda bisa menyelam dan menginap bersama kami"
@@ -442,6 +445,7 @@ export const POSTS_DEFAULTS: PostContent[] = [
  },
  {
   "slug": "marangki-kepa",
+  "slugId": "menginap-di-marangki-kepa-bungalow",
   "title": {
    "en": "Stay at Marangki Kepa Bungalow",
    "id": "Menginap di Marangki Kepa Bungalow"
@@ -466,6 +470,7 @@ export const POSTS_DEFAULTS: PostContent[] = [
  },
  {
   "slug": "rhinopias",
+  "slugId": "rhinopias-mana-favorit-anda-kami-akan-antar-anda-ke-sana",
   "title": {
    "en": "What's your favourite rhinopias? We will take you to them",
    "id": "Rhinopias mana favorit Anda? Kami akan antar Anda ke sana"
@@ -638,6 +643,7 @@ export const POSTS_DEFAULTS: PostContent[] = [
  },
  {
   "slug": "dolphins",
+  "slugId": "alor-kecil-dan-daya-tariknya-yang-seru",
   "title": {
    "en": "Alor Kecil and its cool attraction",
    "id": "Alor Kecil dan daya tariknya yang seru"
@@ -662,6 +668,7 @@ export const POSTS_DEFAULTS: PostContent[] = [
  },
  {
   "slug": "our-team",
+  "slugId": "siapa-yang-akan-memandu-anda-di-air-dive-alor",
   "title": {
    "en": "Who will guide you at Air Dive Alor?",
    "id": "Siapa yang akan memandu Anda di Air Dive Alor?"
@@ -686,6 +693,7 @@ export const POSTS_DEFAULTS: PostContent[] = [
  },
  {
   "slug": "best-time-to-dive",
+  "slugId": "waktu-terbaik-untuk-menyelam-di-alor",
   "title": {
    "en": "The best time to dive in Alor",
    "id": "Waktu terbaik untuk menyelam di Alor"
@@ -841,6 +849,7 @@ export const POSTS_DEFAULTS: PostContent[] = [
  },
  {
   "slug": "kanaloa",
+  "slugId": "kanaloa-lahir-untuk-lautan",
   "title": {
    "en": "Kanaloa, born to the ocean",
    "id": "Kanaloa, lahir untuk lautan"

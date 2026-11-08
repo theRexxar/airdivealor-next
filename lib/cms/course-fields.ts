@@ -8,7 +8,8 @@ export const LEVEL_OPTIONS = COURSE_LEVELS.map((v) => ({ value: v, label: v }));
 const t = (key: string, label: string, help?: string) => F.i18n(key, label, { help });
 
 export const COURSE_FIELDS: Field[] = [
-  F.text("slug", "Web address", { required: true, max: 80, help: "Lowercase words and dashes, used in /dive-courses/<web-address>. Changing it breaks old links." }),
+  F.text("slug", "Web address", { required: true, max: 80, help: "English, lowercase words and dashes: /en/dive-courses/<web-address>. Changing it breaks old links." }),
+  F.text("slugId", "Web address (Indonesian)", { max: 80, help: "Lowercase words and dashes: /id/kursus-selam/<web-address>. Leave empty to use the English one." }),
   F.i18n("name", "Course name", { required: true, max: 80 }),
   F.select("level", "Level", LEVEL_OPTIONS, "Used by the level filters on the Dive courses page."),
   F.select("agency", "Certifying agency", [

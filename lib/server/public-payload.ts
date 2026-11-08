@@ -84,7 +84,7 @@ export async function publicPagePayload(slug: string, opts: Opts = {}) {
 /** One site guide with shared guide texts and previous/next neighbours. Null when not published or hidden. */
 export async function publicSitePayload(slug: string, opts: Opts = {}): Promise<PublishedSite | null> {
   const { items } = await liveItems<SiteContent>("sites", opts);
-  const i = items.findIndex((x) => x.slug === slug);
+  const i = items.findIndex((x) => x.slug === slug || (!!x.slugId && x.slugId === slug));
   if (i < 0) return null;
   const site = items[i];
   const n = items.length;
@@ -98,8 +98,8 @@ export async function publicSitePayload(slug: string, opts: Opts = {}): Promise<
     site,
     index: i,
     total: n,
-    prev: { slug: prev.slug, name: prev.name },
-    next: { slug: next.slug, name: next.name },
+    prev: { slug: prev.slug, slugId: prev.slugId, name: prev.name },
+    next: { slug: next.slug, slugId: next.slugId, name: next.name },
     guide: (page.content as unknown as PublishedDiveSites["content"]).guide,
     media: await resolveMedia(ids),
   };
@@ -108,7 +108,7 @@ export async function publicSitePayload(slug: string, opts: Opts = {}): Promise<
 /** One course page with the shared course-page texts and previous/next neighbours. Null when not published or hidden. */
 export async function publicCoursePayload(slug: string, opts: Opts = {}): Promise<PublishedCourse | null> {
   const { items } = await liveItems<CourseContent>("courses", opts);
-  const i = items.findIndex((x) => x.slug === slug);
+  const i = items.findIndex((x) => x.slug === slug || (!!x.slugId && x.slugId === slug));
   if (i < 0) return null;
   const course = items[i];
   const n = items.length;
@@ -119,8 +119,8 @@ export async function publicCoursePayload(slug: string, opts: Opts = {}): Promis
     course,
     index: i,
     total: n,
-    prev: { slug: prev.slug, name: prev.name },
-    next: { slug: next.slug, name: next.name },
+    prev: { slug: prev.slug, slugId: prev.slugId, name: prev.name },
+    next: { slug: next.slug, slugId: next.slugId, name: next.name },
     detail: (page.content as unknown as PublishedCourses["content"]).detail,
     media: await resolveMedia(new Set(course.photo.mediaId ? [course.photo.mediaId] : [])),
   };
@@ -137,7 +137,7 @@ export async function publicItemPayload(collection: string, slug: string, opts: 
 /** One story with newer/older neighbours, three more stories (same category first) and the shared story-page texts. */
 export async function publicPostPayload(slug: string, opts: Opts = {}): Promise<PublishedPost | null> {
   const { items, mediaIds } = await liveItems<PostContent>("posts", opts);
-  const i = items.findIndex((x) => x.slug === slug);
+  const i = items.findIndex((x) => x.slug === slug || (!!x.slugId && x.slugId === slug));
   if (i < 0) return null;
   const post = items[i];
   const others = items.filter((x) => x !== post);

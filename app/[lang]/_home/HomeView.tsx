@@ -1,5 +1,6 @@
 "use client";
 
+import { useItemHref } from "@/lib/i18n";
 import { useRef, useState } from "react";
 import { SiteFooter } from "@/components/SiteFooter";
 import { SiteHeader } from "@/components/SiteHeader";
@@ -9,7 +10,6 @@ import type { HomeContent, PublishedHome } from "@/lib/cms/home-types";
 import { useContent, type ContentHelpers } from "@/lib/cms/use-content";
 import { waLink } from "@/lib/site";
 import type { SiteContent } from "@/lib/cms/dive-sites-types";
-import { siteHref } from "@/lib/sites";
 import { DepthGauge, type GaugeStop } from "./DepthGauge";
 import { Preloader } from "./Preloader";
 import "./home.css";
@@ -274,6 +274,7 @@ function Why({ c, h }: { c: HomeContent; h: Helpers }) {
 
 /** Site picker: the sites chosen in the CMS, with details from the Dive site guides. Unpublished sites are skipped. */
 function Sites({ c, h, sites }: { c: HomeContent; h: Helpers; sites: Record<string, SiteContent> }) {
+  const itemHref = useItemHref();
   const { L, img, t } = h;
   const items = c.sites.items.map((x) => ({ ...x, site: sites[x.slug] })).filter((x) => x.site);
   const [i, setI] = useState(Math.max(0, Math.min(items.length - 1, (c.sites.defaultIndex || 1) - 1)));
@@ -304,7 +305,7 @@ function Sites({ c, h, sites }: { c: HomeContent; h: Helpers; sites: Record<stri
               <div className="home-sites__type">{L(s.type)}</div>
               <h3 className="home-sites__h3">{s.name}</h3>
             </div>
-            <ButtonLink href={siteHref(s.slug)} variant="text" size="large" icon="arrow-right" iconPosition="suffix">
+            <ButtonLink href={itemHref("sites", s)} variant="text" size="large" icon="arrow-right" iconPosition="suffix">
               {L(c.sites.guideLabel)}
             </ButtonLink>
           </div>

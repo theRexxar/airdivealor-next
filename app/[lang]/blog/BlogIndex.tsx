@@ -1,11 +1,12 @@
 "use client";
 
+import { useItemHref } from "@/lib/i18n";
 import { useState } from "react";
 import { PostCard } from "@/components/PostCard";
 import { SiteFooter } from "@/components/SiteFooter";
 import { SiteHeader } from "@/components/SiteHeader";
 import { Button, ButtonLink, Dot, Eyebrow } from "@/components/ui";
-import { dateLabel, postHref, readTimeLabel } from "@/lib/blog";
+import { dateLabel, readTimeLabel } from "@/lib/blog";
 import type { PostCardData, PublishedBlog } from "@/lib/cms/blog-cms-types";
 import { useContent, type ContentHelpers } from "@/lib/cms/use-content";
 import { waLink } from "@/lib/site";
@@ -33,6 +34,7 @@ export function BlogIndex({ data }: { data: PublishedBlog }) {
 type P = { data: PublishedBlog; h: ContentHelpers };
 
 function Hero({ data, h, feat }: P & { feat: PostCardData }) {
+  const itemHref = useItemHref();
   const { L, img, lang } = h;
   const c = data.content.hero;
   const title = L(feat.title);
@@ -55,7 +57,7 @@ function Hero({ data, h, feat }: P & { feat: PostCardData }) {
         </div>
         {L(c.buttonLabel) && (
           <div className="blog-hero__cta">
-            <ButtonLink href={postHref(feat.slug)} variant="primary" size="xlarge" icon="arrow-right" iconPosition="suffix">
+            <ButtonLink href={itemHref("posts", feat)} variant="primary" size="xlarge" icon="arrow-right" iconPosition="suffix">
               {L(c.buttonLabel)}
             </ButtonLink>
           </div>

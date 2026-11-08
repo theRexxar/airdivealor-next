@@ -7,15 +7,15 @@ import type { PublishedCourse, PublishedCourses } from "@/lib/cms/courses-types"
 import type { PublishedDiveSites, PublishedSite } from "@/lib/cms/dive-sites-types";
 import type { PublishedFacilities } from "@/lib/cms/facilities-types";
 import type { PublishedHome } from "@/lib/cms/home-types";
-import { HomeView } from "../../_home/HomeView";
-import { AboutView } from "../../about-us/AboutView";
-import { PostView } from "../../blog/[slug]/PostView";
-import { BlogIndex } from "../../blog/BlogIndex";
-import { CourseDetailView } from "../../dive-courses/[id]/CourseDetailView";
-import { CoursesView } from "../../dive-courses/CoursesView";
-import { SiteGuideView } from "../../dive-sites/[slug]/SiteGuideView";
-import { SitesView } from "../../dive-sites/SitesView";
-import { FacilitiesView } from "../../facilities-and-rates/FacilitiesView";
+import { HomeView } from "../../[lang]/_home/HomeView";
+import { AboutView } from "../../[lang]/about-us/AboutView";
+import { PostView } from "../../[lang]/blog/[slug]/PostView";
+import { BlogIndex } from "../../[lang]/blog/BlogIndex";
+import { CourseDetailView } from "../../[lang]/dive-courses/[id]/CourseDetailView";
+import { CoursesView } from "../../[lang]/dive-courses/CoursesView";
+import { SiteGuideView } from "../../[lang]/dive-sites/[slug]/SiteGuideView";
+import { SitesView } from "../../[lang]/dive-sites/SitesView";
+import { FacilitiesView } from "../../[lang]/facilities-and-rates/FacilitiesView";
 
 /** Loads draft content from the CMS API and renders it with the website's own components, under a preview banner. */
 export function PreviewClient({ kind, collection, slug, anchors, back }: { kind: "page" | "item"; collection?: string; slug: string; anchors: Record<string, string>; back: string }) {

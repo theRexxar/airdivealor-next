@@ -1,12 +1,13 @@
 "use client";
 
-import Link from "next/link";
+import { useItemHref } from "@/lib/i18n";
+import Link from "@/components/LocalLink";
 import { useEffect, useRef, useState } from "react";
 import { PostCard } from "@/components/PostCard";
 import { SiteFooter } from "@/components/SiteFooter";
 import { SiteHeader } from "@/components/SiteHeader";
 import { Button, ButtonLink, Dot, Icon } from "@/components/ui";
-import { dateLabel, postHref, readTimeLabel } from "@/lib/blog";
+import { dateLabel, readTimeLabel } from "@/lib/blog";
 import type { BodyBlock, PostCardData, PublishedPost } from "@/lib/cms/blog-cms-types";
 import { useContent, type ContentHelpers } from "@/lib/cms/use-content";
 import { ROUTES, waLink } from "@/lib/site";
@@ -152,10 +153,11 @@ export function PostView({ data }: { data: PublishedPost }) {
 }
 
 function AdjacentLink({ post, dir, h }: { post: PostCardData; dir: "newer" | "older"; h: ContentHelpers }) {
+  const itemHref = useItemHref();
   const { L, img, t } = h;
   const thumb = img(post.cover, "160px");
   return (
-    <Link href={postHref(post.slug)} className="adjacent__link">
+    <Link href={itemHref("posts", post)} className="adjacent__link">
       <span className="adjacent__thumb">{thumb && <img src={thumb.src} srcSet={thumb.srcSet} sizes={thumb.sizes} alt="" loading="lazy" />}</span>
       <span className="adjacent__text">
         <span className="adjacent__label">

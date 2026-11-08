@@ -1,13 +1,13 @@
 "use client";
 
+import { useItemHref } from "@/lib/i18n";
 import { useState } from "react";
-import Link from "next/link";
+import Link from "@/components/LocalLink";
 import { SiteFooter } from "@/components/SiteFooter";
 import { SiteHeader } from "@/components/SiteHeader";
 import { Button, ButtonLink, Eyebrow, Tag } from "@/components/ui";
 import { bookMessage, type PublishedCourses } from "@/lib/cms/courses-types";
 import { useContent, type ContentHelpers } from "@/lib/cms/use-content";
-import { courseHref } from "@/lib/courses";
 import { waLink } from "@/lib/site";
 import "./courses.css";
 
@@ -53,6 +53,7 @@ function Hero({ data, h }: P) {
 }
 
 function List({ data, h }: P) {
+  const itemHref = useItemHref();
   const { L, img, t } = h;
   const c = data.content.list;
   const [filter, setFilter] = useState(0);
@@ -77,7 +78,7 @@ function List({ data, h }: P) {
           const meta = [L(x.stay), L(x.dives)].filter(Boolean).join(" · ");
           return (
             <article key={x.slug} className="course-card">
-              <Link href={courseHref(x.slug)} className="course-card__media" tabIndex={-1}>
+              <Link href={itemHref("courses", x)} className="course-card__media" tabIndex={-1}>
                 {photo && <img src={photo.src} srcSet={photo.srcSet} sizes={photo.sizes} alt={photo.alt || L(x.name)} loading="lazy" />}
                 <span className="course-card__tag">
                   <Tag tone="primary">{t(x.level)}</Tag>
@@ -92,7 +93,7 @@ function List({ data, h }: P) {
                 <p className="course-card__text">{L(x.text)}</p>
                 <div className="course-card__actions">
                   {L(c.moreLabel) && (
-                    <ButtonLink href={courseHref(x.slug)} variant="text" icon="arrow-right" iconPosition="suffix">
+                    <ButtonLink href={itemHref("courses", x)} variant="text" icon="arrow-right" iconPosition="suffix">
                       {L(c.moreLabel)}
                     </ButtonLink>
                   )}

@@ -1,11 +1,12 @@
 "use client";
 
+import { useItemHref } from "@/lib/i18n";
 import { useRouter } from "next/navigation";
+import { LangSwitch } from "@/components/LangSwitch";
 import { useEffect } from "react";
 import { Alert, ButtonLink, Eyebrow, Icon, Tag, asIcon, type IconName } from "@/components/ui";
 import { bookMessage, type PublishedCourse } from "@/lib/cms/courses-types";
 import { useContent } from "@/lib/cms/use-content";
-import { courseHref } from "@/lib/courses";
 import { ROUTES, waLink } from "@/lib/site";
 import "../courses.css";
 
@@ -13,6 +14,7 @@ const pad = (n: number) => String(n).padStart(2, "0");
 
 /** One course page, rendered from the CMS (published, or the draft in the CMS preview). */
 export function CourseDetailView({ data }: { data: PublishedCourse }) {
+  const itemHref = useItemHref();
   const { L, img, t } = useContent(data.media);
   const c = data.course;
   const d = data.detail;
@@ -61,8 +63,9 @@ export function CourseDetailView({ data }: { data: PublishedCourse }) {
         <span className="course-bar__count">
           {pad(i + 1)} / {pad(N)}
         </span>
-        <ButtonLink href={courseHref(data.prev.slug)} variant="secondary" icon="arrow-left" iconOnly aria-label={t("Previous course")} />
-        <ButtonLink href={courseHref(data.next.slug)} variant="secondary" icon="arrow-right" iconOnly aria-label={t("Next course")} />
+        <LangSwitch />
+        <ButtonLink href={itemHref("courses", data.prev)} variant="secondary" icon="arrow-left" iconOnly aria-label={t("Previous course")} />
+        <ButtonLink href={itemHref("courses", data.next)} variant="secondary" icon="arrow-right" iconOnly aria-label={t("Next course")} />
         {L(d.bookLabel) && (
           <span className="wide-only">
             <ButtonLink href={book} external variant="primary" icon="message-circle">
@@ -215,7 +218,7 @@ export function CourseDetailView({ data }: { data: PublishedCourse }) {
               {L(d.ctaLabel)}
             </ButtonLink>
           )}
-          <ButtonLink href={courseHref(data.next.slug)} variant="secondary" size="xlarge" icon="arrow-right" iconPosition="suffix">
+          <ButtonLink href={itemHref("courses", data.next)} variant="secondary" size="xlarge" icon="arrow-right" iconPosition="suffix">
             {L(data.next.name)}
           </ButtonLink>
         </div>

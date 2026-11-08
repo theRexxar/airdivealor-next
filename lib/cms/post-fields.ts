@@ -30,7 +30,8 @@ export const BODY_BLOCKS: BlockKind[] = [
 ];
 
 export const POST_FIELDS: Field[] = [
-  F.text("slug", "Web address", { required: true, max: 80, help: "Lowercase words and dashes, used in /blog/<web-address>. Changing it breaks old links." }),
+  F.text("slug", "Web address", { required: true, max: 80, help: "English, lowercase words and dashes: /en/blog/<web-address>. Changing it breaks old links." }),
+  F.text("slugId", "Web address (Indonesian)", { max: 80, help: "Lowercase words and dashes: /id/blog/<web-address>. Leave empty to use the English one." }),
   F.i18n("title", "Title", { required: true, max: 200 }),
   F.i18n("excerpt", "Excerpt", { required: true, multiline: true, max: 400, help: "Shown on the story cards and under the title." }),
   F.date("date", "Date", { required: true, help: "Stories are listed newest first. The newest one is featured at the top of the blog." }),

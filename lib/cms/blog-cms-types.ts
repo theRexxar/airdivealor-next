@@ -13,6 +13,8 @@ export type BodyBlock =
 
 export interface PostContent {
   slug: string;
+  /** Indonesian web address; empty or missing = same as slug. */
+  slugId?: string;
   title: I18n;
   excerpt: I18n;
   date: string;
@@ -40,6 +42,7 @@ export interface BlogContent {
 /** A story as cards need it (no body), with its read time worked out on the server. */
 export interface PostCardData {
   slug: string;
+  slugId?: string;
   title: I18n;
   excerpt: I18n;
   date: string;
@@ -86,4 +89,4 @@ export function readMinutes(p: PostContent): number {
   return Math.max(2, Math.round(n / 200));
 }
 
-export const toCard = (p: PostContent): PostCardData => ({ slug: p.slug, title: p.title, excerpt: p.excerpt, date: p.date, category: p.category, cover: p.cover, minutes: readMinutes(p) });
+export const toCard = (p: PostContent): PostCardData => ({ slug: p.slug, slugId: p.slugId || undefined, title: p.title, excerpt: p.excerpt, date: p.date, category: p.category, cover: p.cover, minutes: readMinutes(p) });

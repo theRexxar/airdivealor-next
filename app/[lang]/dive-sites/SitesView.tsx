@@ -1,6 +1,7 @@
 "use client";
 
-import Link from "next/link";
+import { useItemHref } from "@/lib/i18n";
+import Link from "@/components/LocalLink";
 import { useState } from "react";
 import { SiteFooter } from "@/components/SiteFooter";
 import { SiteHeader } from "@/components/SiteHeader";
@@ -8,7 +9,6 @@ import { Alert, Button, ButtonLink, Eyebrow, Icon, asIcon } from "@/components/u
 import type { PublishedDiveSites, SiteContent } from "@/lib/cms/dive-sites-types";
 import { useContent, type ContentHelpers } from "@/lib/cms/use-content";
 import { waLink } from "@/lib/site";
-import { siteHref } from "@/lib/sites";
 import "./sites.css";
 
 /** The Dive sites page, rendered from CMS content (published, or drafts in the CMS preview). */
@@ -80,6 +80,7 @@ const matches = (site: SiteContent, match: string) => {
 };
 
 function List({ c, h, sites }: P & { sites: SiteContent[] }) {
+  const itemHref = useItemHref();
   const { L, img, t, lang } = h;
   const per = Math.max(1, c.list.pageSize || 9);
   const [filter, setFilter] = useState(0);
@@ -129,7 +130,7 @@ function List({ c, h, sites }: P & { sites: SiteContent[] }) {
         {all.slice(0, shown).map(({ s, i }) => {
           const photo = img(s.photo, "(min-width: 1040px) 33vw, (min-width: 700px) 50vw, 100vw");
           return (
-            <Link key={s.slug} href={siteHref(s.slug)} aria-label={`Open site guide: ${s.name}`} className="site-card">
+            <Link key={s.slug} href={itemHref("sites", s)} aria-label={`Open site guide: ${s.name}`} className="site-card">
               <div className="site-card__media">
                 {photo ? (
                   <img src={photo.src} srcSet={photo.srcSet} sizes={photo.sizes} alt={photo.alt || s.name} loading="lazy" />

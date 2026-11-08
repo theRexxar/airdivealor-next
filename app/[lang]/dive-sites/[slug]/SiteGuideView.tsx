@@ -1,17 +1,20 @@
 "use client";
 
+import { useItemHref } from "@/lib/i18n";
 import { useRouter } from "next/navigation";
+import { LangSwitch } from "@/components/LangSwitch";
 import { useEffect } from "react";
 import { Alert, ButtonLink, Eyebrow, Icon, Tag, type IconName } from "@/components/ui";
 import type { PublishedSite } from "@/lib/cms/dive-sites-types";
 import { useContent } from "@/lib/cms/use-content";
 import { ROUTES, waLink } from "@/lib/site";
-import { siteHref, siteNum } from "@/lib/sites";
+import { siteNum } from "@/lib/sites";
 import "../sites.css";
 import "../../dive-courses/courses.css";
 
 /** One dive site guide, rendered from the CMS (published, or the draft in the CMS preview). */
 export function SiteGuideView({ data }: { data: PublishedSite }) {
+  const itemHref = useItemHref();
   const { L, img, t } = useContent(data.media);
   const router = useRouter();
   const x = data.site;
@@ -58,8 +61,9 @@ export function SiteGuideView({ data }: { data: PublishedSite }) {
         <span className="course-bar__count">
           {data.index + 1} / {data.total}
         </span>
-        <ButtonLink href={siteHref(data.prev.slug)} variant="secondary" icon="arrow-left" iconOnly aria-label={t("Previous site")} />
-        <ButtonLink href={siteHref(data.next.slug)} variant="secondary" icon="arrow-right" iconOnly aria-label={t("Next site")} />
+        <LangSwitch />
+        <ButtonLink href={itemHref("sites", data.prev)} variant="secondary" icon="arrow-left" iconOnly aria-label={t("Previous site")} />
+        <ButtonLink href={itemHref("sites", data.next)} variant="secondary" icon="arrow-right" iconOnly aria-label={t("Next site")} />
         <span className="guide-wide-only">
           <ButtonLink href={book} external variant="primary">
             {L(g.bookLabel)}
@@ -225,7 +229,7 @@ export function SiteGuideView({ data }: { data: PublishedSite }) {
           <ButtonLink href={book} external variant="primary" size="xlarge">
             {L(g.bookLabel)}
           </ButtonLink>
-          <ButtonLink href={siteHref(data.next.slug)} variant="secondary" size="xlarge" icon="arrow-right" iconPosition="suffix">
+          <ButtonLink href={itemHref("sites", data.next)} variant="secondary" size="xlarge" icon="arrow-right" iconPosition="suffix">
             {data.next.name}
           </ButtonLink>
         </div>

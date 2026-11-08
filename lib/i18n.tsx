@@ -3,7 +3,8 @@
 import { EXACT, FRAG } from "./i18n-dict";
 import { FACILITIES_ID } from "./page-dicts";
 import { SITES_ID, SITES_PAGE_ID } from "./sites-data";
-import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
+import { createContext, useCallback, useContext, useMemo, type ReactNode } from "react";
+import { itemPath, localizeHref, type Alternates, type Locale, type PageCollection } from "./i18n-routes";
 
 export type Lang = "EN" | "ID";
 
@@ -113,11 +114,11 @@ export function toId(en: string): string {
   return out;
 }
 
-const STORAGE_KEY = "ada-lang";
-
 interface LangCtx {
+  /** "EN" or "ID": the language of the current URL (/en/... or /id/...). */
   lang: Lang;
-  toggle: () => void;
+  /** "en" or "id", as in URLs. */
+  locale: Locale;
   /** Translate a fixed UI string. */
   t: (en: string) => string;
   /** Pick between an English and an Indonesian value. */
@@ -126,37 +127,41 @@ interface LangCtx {
 
 const Ctx = createContext<LangCtx | null>(null);
 
-export function LangProvider({ children }: { children: ReactNode }) {
-  const [lang, setLang] = useState<Lang>("EN");
-
-  useEffect(() => {
-    try {
-      if (localStorage.getItem(STORAGE_KEY) === "ID") setLang("ID");
-    } catch {}
-  }, []);
-
-  useEffect(() => {
-    document.documentElement.lang = lang === "ID" ? "id" : "en";
-  }, [lang]);
-
-  const toggle = useCallback(() => {
-    setLang((l) => {
-      const next: Lang = l === "EN" ? "ID" : "EN";
-      try {
-        localStorage.setItem(STORAGE_KEY, next);
-      } catch {}
-      return next;
-    });
-  }, []);
-
+/** The language comes from the URL (app/[lang]); switching language means going to the other URL. */
+export function LangProvider({ lang: locale, children }: { lang: Locale; children: ReactNode }) {
+  const lang: Lang = locale === "id" ? "ID" : "EN";
   const t = useCallback((en: string) => (lang === "ID" ? toId(en) : en), [lang]);
   const pick = useCallback(<T,>(en: T, id: T | undefined) => (lang === "ID" && id != null ? id : en), [lang]);
-
-  return <Ctx.Provider value={{ lang, toggle, t, pick }}>{children}</Ctx.Provider>;
+  const value = useMemo(() => ({ lang, locale, t, pick }), [lang, locale, t, pick]);
+  return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }
 
 export function useLang(): LangCtx {
   const v = useContext(Ctx);
   if (!v) throw new Error("useLang must be used inside <LangProvider>");
   return v;
+}
+
+/** The same page in each language, set by each page for the language switch. */
+const AltCtx = createContext<Alternates | null>(null);
+export function AlternatesProvider({ value, children }: { value: Alternates; children: ReactNode }) {
+  return <AltCtx.Provider value={value}>{children}</AltCtx.Provider>;
+}
+export const useAlternates = () => useContext(AltCtx);
+
+/** The current URL language, or English outside a LangProvider. */
+export function useLocale(): Locale {
+  return useContext(Ctx)?.locale ?? "en";
+}
+
+/** Link to an item page (dive site, course, story) in the current language, with its slug in that language. */
+export function useItemHref() {
+  const locale = useLocale();
+  return useCallback((collection: PageCollection, item: { slug: string; slugId?: string }) => itemPath(locale, collection, item), [locale]);
+}
+
+/** Put a site link into the current language (see localizeHref). */
+export function useLocalize() {
+  const locale = useLocale();
+  return useCallback((href: string) => localizeHref(href, locale), [locale]);
 }

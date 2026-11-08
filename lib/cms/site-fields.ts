@@ -4,7 +4,8 @@ import { F, schemaFor, type Field } from "./fields";
 const t = (key: string, label: string, help?: string) => F.i18n(key, label, { help });
 
 export const SITE_FIELDS: Field[] = [
-  F.text("slug", "Web address", { required: true, max: 80, help: "Lowercase words and dashes, used in /dive-sites/<web-address>. Changing it breaks old links." }),
+  F.text("slug", "Web address", { required: true, max: 80, help: "English, lowercase words and dashes: /en/dive-sites/<web-address>. Changing it breaks old links." }),
+  F.text("slugId", "Web address (Indonesian)", { max: 80, help: "Lowercase words and dashes: /id/titik-selam/<web-address>. Leave empty to use the English one." }),
   F.text("name", "Site name", { required: true, max: 80 }),
   F.text("aka", "Also known as", { max: 120 }),
   t("area", "Location", "e.g. Pantar Strait"),

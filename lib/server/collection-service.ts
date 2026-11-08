@@ -26,6 +26,15 @@ export async function validateItem(key: string, content: unknown, selfId?: numbe
     where: and(eq(schema.collectionItems.collection, key), eq(schema.collectionItems.slug, data.slug), selfId ? ne(schema.collectionItems.id, selfId) : undefined),
   });
   if (clash) throw new HttpError(409, "Another item already uses this web address.", [{ path: ["slug"], message: "Already used by another item." }]);
+  if ("slugId" in data) {
+    const sid = String(data.slugId ?? "");
+    if (sid && !SLUG_RE.test(sid)) throw new HttpError(422, "Use lowercase letters, numbers and dashes only.", [{ path: ["slugId"], message: "Use lowercase letters, numbers and dashes only." }]);
+    // The Indonesian address in use is slugId, or slug when empty; no two items may share one.
+    const mine = sid || data.slug;
+    const others = await db.select({ id: schema.collectionItems.id, slug: schema.collectionItems.slug, draft: schema.collectionItems.draft }).from(schema.collectionItems).where(eq(schema.collectionItems.collection, key));
+    const taken = others.some((o) => o.id !== selfId && (String((o.draft as { slugId?: string }).slugId || "") || o.slug) === mine);
+    if (taken) throw new HttpError(409, "Another item already uses this Indonesian web address.", [{ path: [sid ? "slugId" : "slug"], message: "Already used (in Indonesian) by another item." }]);
+  }
   return data;
 }
 

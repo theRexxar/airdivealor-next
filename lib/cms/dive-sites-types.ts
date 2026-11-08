@@ -4,6 +4,8 @@ import type { ResolvedMedia } from "./home-types";
 
 export interface SiteContent {
   slug: string;
+  /** Indonesian web address; empty or missing = same as slug. */
+  slugId?: string;
   name: string;
   aka: string;
   area: I18n;
@@ -55,8 +57,8 @@ export interface PublishedSite {
   site: SiteContent;
   index: number;
   total: number;
-  prev: { slug: string; name: string };
-  next: { slug: string; name: string };
+  prev: { slug: string; slugId?: string; name: string };
+  next: { slug: string; slugId?: string; name: string };
   guide: DiveSitesContent["guide"];
   media: Record<string, ResolvedMedia>;
 }

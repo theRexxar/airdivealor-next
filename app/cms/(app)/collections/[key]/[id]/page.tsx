@@ -12,6 +12,7 @@ import { api, ApiError, fmtDate } from "@/lib/cms/client";
 import { emptyObject } from "@/lib/cms/fields";
 import type { ResolvedMedia } from "@/lib/cms/home-types";
 import { collectionDef, itemTitle } from "@/lib/cms/registry";
+import { COLLECTION_SECTION, itemPath, type PageCollection } from "@/lib/i18n-routes";
 import { Forbidden } from "../../../Forbidden";
 
 type Status = "draft" | "live" | "changed" | "hidden";
@@ -65,8 +66,9 @@ export default function ItemEditorPage() {
     }
     try {
       const d = await api<ItemData>(`/api/cms/collections/${key}/${id}`);
-      setData(d);
-      setValue(d.draft);
+      const draft = { ...emptyObject(def.fields), ...d.draft };
+      setData({ ...d, draft });
+      setValue(draft);
       setMedia(d.media);
       setErrors([]);
     } catch (e) {
@@ -267,7 +269,12 @@ export default function ItemEditorPage() {
           )}
           <div className="cms-card">
             <div className="cms-card__body cms-muted">
-              {!def.noItemPage && <>The web address becomes the page link ({def.itemHref(String(value.slug || "web-address"))}). </>}Text fields have English (EN) and Indonesian (ID) boxes.
+              {!def.noItemPage && key in COLLECTION_SECTION && (
+                <>
+                  The web addresses become the page links: {itemPath("en", key as PageCollection, { slug: String(value.slug || "web-address") })} in English and{" "}
+                  {itemPath("id", key as PageCollection, { slug: String(value.slug || "web-address"), slugId: String(value.slugId || "") })} in Indonesian (the English address when the Indonesian one is empty).{" "}
+                </>
+              )}Text fields have English (EN) and Indonesian (ID) boxes.
             </div>
           </div>
         </aside>

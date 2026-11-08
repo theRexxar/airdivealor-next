@@ -9,6 +9,7 @@ import type { SiteContent } from "../cms/dive-sites-types";
 import type { FacilitiesContent } from "../cms/facilities-types";
 import type { I18n, MediaRef } from "../cms/fields";
 import type { ResolvedMedia } from "../cms/home-types";
+import { pagePath, type Locale } from "../i18n-routes";
 import { SOCIAL } from "../site";
 
 export type Node = Record<string, unknown>;
@@ -32,13 +33,22 @@ export const BUSINESS = {
 };
 
 const clean = (s: string | undefined | null) => (s ?? "").replace(/\s+/g, " ").trim();
-const en = (v: I18n | undefined) => clean(v?.en);
 const trim = (s: string, n: number) => (s.length > n ? `${s.slice(0, n - 1).trimEnd()}…` : s);
 
 export class Ld {
   readonly site: string;
-  constructor(siteUrl: string) {
+  readonly lang: Locale;
+  constructor(siteUrl: string, lang: Locale = "en") {
     this.site = siteUrl.replace(/\/$/, "");
+    this.lang = lang;
+  }
+  /** A fixed label in the page language. */
+  w(en: string, id: string) {
+    return this.lang === "id" ? id : en;
+  }
+  /** Text in the page language, English when the Indonesian is empty. */
+  tx(v: I18n | undefined) {
+    return clean(this.lang === "id" && v?.id?.trim() ? v.id : v?.en);
   }
   /** Absolute URL for a path or URL. */
   url(pathOrUrl: string) {
@@ -67,7 +77,7 @@ export class Ld {
       "@id": this.orgId,
       name: BUSINESS.name,
       alternateName: BUSINESS.alternateName,
-      url: `${this.site}/`,
+      url: this.url(pagePath(this.lang, "home")),
       logo: { "@type": "ImageObject", url: this.url("/brand/logo-full-white.png") },
       image: this.url("/latest/b-stay-shop.webp"),
       description: trim(description, 300),
@@ -93,7 +103,7 @@ export class Ld {
   }
 
   website(): Node {
-    return { "@type": "WebSite", "@id": this.websiteId, url: `${this.site}/`, name: BUSINESS.name, inLanguage: ["en", "id"], publisher: this.ref(this.orgId) };
+    return { "@type": "WebSite", "@id": this.websiteId, url: this.url(pagePath(this.lang, "home")), name: BUSINESS.name, inLanguage: ["en", "id"], publisher: this.ref(this.orgId) };
   }
 
   /** The page itself. `type` is WebPage, CollectionPage, AboutPage, … */
@@ -105,7 +115,7 @@ export class Ld {
       url,
       name: o.name,
       description: trim(o.description, 300),
-      inLanguage: "en",
+      inLanguage: this.lang,
       isPartOf: this.ref(this.websiteId),
       about: this.ref(this.orgId),
       ...(o.image ? { primaryImageOfPage: { "@type": "ImageObject", url: o.image } } : {}),
@@ -119,17 +129,17 @@ export class Ld {
     return {
       "@type": "BreadcrumbList",
       "@id": `${this.url(path)}#breadcrumb`,
-      itemListElement: [{ name: "Home", path: "/" }, ...items].map((x, i) => ({ "@type": "ListItem", position: i + 1, name: x.name, item: this.url(x.path) })),
+      itemListElement: [{ name: this.lang === "id" ? "Beranda" : "Home", path: pagePath(this.lang, "home") }, ...items].map((x, i) => ({ "@type": "ListItem", position: i + 1, name: x.name, item: this.url(x.path) })),
     };
   }
 
   faq(items: { q: I18n; a: I18n }[]): Node | null {
-    const qs = items.filter((x) => en(x.q) && en(x.a));
+    const qs = items.filter((x) => this.tx(x.q) && this.tx(x.a));
     if (!qs.length) return null;
     return {
       "@type": "FAQPage",
       "@id": `${this.site}/#faq`,
-      mainEntity: qs.map((x) => ({ "@type": "Question", name: en(x.q), acceptedAnswer: { "@type": "Answer", text: en(x.a) } })),
+      mainEntity: qs.map((x) => ({ "@type": "Question", name: this.tx(x.q), acceptedAnswer: { "@type": "Answer", text: this.tx(x.a) } })),
     };
   }
 
@@ -146,12 +156,12 @@ export class Ld {
   diveSite(s: SiteContent, media: Media, path: string): Node {
     const images = [this.image(s.photo, media), ...s.gallery.map((g) => this.image(g.photo, media))].filter((x): x is string => !!x);
     const facts = [
-      ["Depth", s.depth],
-      ["Level", en(s.level)],
-      ["Current", en(s.current)],
-      ["Visibility", s.vis],
-      ["Water temperature", s.temp],
-      ["Best time", en(s.bestTime)],
+      [this.w("Depth", "Kedalaman"), s.depth],
+      [this.w("Level", "Level"), this.tx(s.level)],
+      [this.w("Current", "Arus"), this.tx(s.current)],
+      [this.w("Visibility", "Jarak pandang"), s.vis],
+      [this.w("Water temperature", "Suhu air"), s.temp],
+      [this.w("Best time", "Waktu terbaik"), this.tx(s.bestTime)],
     ].filter(([, v]) => v);
     return {
       "@type": "TouristAttraction",
@@ -159,10 +169,10 @@ export class Ld {
       name: s.name,
       ...(s.aka ? { alternateName: s.aka } : {}),
       url: this.url(path),
-      description: trim(en(s.intro) || en(s.aboutTopo), 500),
+      description: trim(this.tx(s.intro) || this.tx(s.aboutTopo), 500),
       ...(images.length ? { image: images } : {}),
-      touristType: ["Scuba divers", en(s.level) || "Divers"].filter(Boolean),
-      containedInPlace: { "@type": "Place", name: `${en(s.area) || "Alor"}, East Nusa Tenggara, Indonesia` },
+      touristType: [this.w("Scuba divers", "Penyelam scuba"), this.tx(s.level)].filter(Boolean),
+      containedInPlace: { "@type": "Place", name: `${this.tx(s.area) || "Alor"}, ${this.w("East Nusa Tenggara", "Nusa Tenggara Timur")}, Indonesia` },
       additionalProperty: facts.map(([name, value]) => ({ "@type": "PropertyValue", name, value })),
       provider: this.ref(this.orgId),
     };
@@ -171,18 +181,18 @@ export class Ld {
   /** A course with its package price. */
   course(c: CourseContent, media: Media, path: string): Node {
     const price = priceNumber(c.price);
-    const days = Number((en(c.days).match(/\d+/) ?? [])[0]);
+    const days = Number((this.tx(c.days).match(/\d+/) ?? [])[0]);
     return {
       "@type": "Course",
       "@id": `${this.url(path)}#course`,
-      name: en(c.name),
+      name: this.tx(c.name),
       url: this.url(path),
-      description: trim(en(c.text), 500),
+      description: trim(this.tx(c.text), 500),
       ...(this.image(c.photo, media) ? { image: this.image(c.photo, media) } : {}),
       provider: this.ref(this.orgId),
-      educationalCredentialAwarded: `${c.agency} ${en(c.name)}`,
-      ...(en(c.prereq) ? { coursePrerequisites: en(c.prereq) } : {}),
-      ...(c.learn.length ? { teaches: c.learn.map((l) => en(l.text)).filter(Boolean) } : {}),
+      educationalCredentialAwarded: `${c.agency} ${this.tx(c.name)}`,
+      ...(this.tx(c.prereq) ? { coursePrerequisites: this.tx(c.prereq) } : {}),
+      ...(c.learn.length ? { teaches: c.learn.map((l) => this.tx(l.text)).filter(Boolean) } : {}),
       inLanguage: ["en", "id"],
       ...(price
         ? { offers: { "@type": "Offer", category: "Paid", price, priceCurrency: "IDR", availability: "https://schema.org/InStock", url: this.url(path) } }
@@ -203,41 +213,41 @@ export class Ld {
       const offers = p.rows.length
         ? p.rows.map((r) => ({
             "@type": "Offer",
-            name: `${en(p.name)}: ${r.days} days, ${r.nights} nights, ${r.dives} dives`,
+            name: this.lang === "id" ? `${this.tx(p.name)}: ${r.days} hari, ${r.nights} malam, ${r.dives} kali selam` : `${this.tx(p.name)}: ${r.days} days, ${r.nights} nights, ${r.dives} dives`,
             price: priceNumber(r.price),
             priceCurrency: "IDR",
           }))
-        : p.cards.map((c) => ({ "@type": "Offer", name: `${en(c.label)} (${en(c.per)})`, price: priceNumber(c.price), priceCurrency: "IDR" }));
-      return { "@type": "OfferCatalog", name: [en(p.name), en(p.sub)].filter(Boolean).join(": "), itemListElement: offers.filter((o) => o.price) };
+        : p.cards.map((c) => ({ "@type": "Offer", name: `${this.tx(c.label)} (${this.tx(c.per)})`, price: priceNumber(c.price), priceCurrency: "IDR" }));
+      return { "@type": "OfferCatalog", name: [this.tx(p.name), this.tx(p.sub)].filter(Boolean).join(": "), itemListElement: offers.filter((o) => o.price) };
     });
     return {
       "@type": "Service",
       "@id": `${this.url(path)}#rates`,
-      name: "Dive and stay packages in Alor Kecil",
-      serviceType: "Scuba diving trips with accommodation",
+      name: this.w("Dive and stay packages in Alor Kecil", "Paket selam dan menginap di Alor Kecil"),
+      serviceType: this.w("Scuba diving trips with accommodation", "Trip selam scuba dengan penginapan"),
       provider: this.ref(this.orgId),
       areaServed: { "@type": "Place", name: "Alor, East Nusa Tenggara, Indonesia" },
-      hasOfferCatalog: { "@type": "OfferCatalog", name: en(f.rates.title) || "Diving rates", itemListElement: pkgs },
+      hasOfferCatalog: { "@type": "OfferCatalog", name: this.tx(f.rates.title) || this.w("Diving rates", "Tarif selam"), itemListElement: pkgs },
     };
   }
 
   blogPosting(o: { post: PostContent | PostCardData; path: string; media: Media; categories: CategoryContent[]; author?: I18n; dateModified?: string | null }): Node {
     const p = o.post;
     const image = this.image(p.cover, o.media);
-    const author = en(o.author);
+    const author = this.tx(o.author);
     const cat = o.categories.find((c) => c.slug === p.category);
     return {
       "@type": "BlogPosting",
       "@id": `${this.url(o.path)}#article`,
-      headline: trim(en(p.title), 110),
-      description: trim(en(p.excerpt), 300),
+      headline: trim(this.tx(p.title), 110),
+      description: trim(this.tx(p.excerpt), 300),
       url: this.url(o.path),
       mainEntityOfPage: this.url(o.path),
       ...(image ? { image } : {}),
       datePublished: p.date,
       dateModified: o.dateModified ?? p.date,
-      inLanguage: "en",
-      ...(cat ? { articleSection: en(cat.name) } : {}),
+      inLanguage: this.lang,
+      ...(cat ? { articleSection: this.tx(cat.name) } : {}),
       ...(author
         ? { author: /team|air dive/i.test(author) ? this.ref(this.orgId) : { "@type": "Person", name: author } }
         : { author: this.ref(this.orgId) }),
@@ -246,7 +256,7 @@ export class Ld {
   }
 
   blog(content: BlogContent, path: string, posts: { node: Node }[]): Node {
-    return { "@type": "Blog", "@id": `${this.url(path)}#blog`, name: en(content.stories.title) || "Air Dive Alor blog", url: this.url(path), publisher: this.ref(this.orgId), blogPost: posts.map((p) => p.node) };
+    return { "@type": "Blog", "@id": `${this.url(path)}#blog`, name: this.tx(content.stories.title) || "Air Dive Alor blog", url: this.url(path), inLanguage: this.lang, publisher: this.ref(this.orgId), blogPost: posts.map((p) => p.node) };
   }
 }
 

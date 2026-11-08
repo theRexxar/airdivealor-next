@@ -7,6 +7,7 @@ import { PageHead } from "@/components/cms/Shell";
 import { useToast } from "@/components/cms/Toast";
 import { Alert, Button, ButtonLink } from "@/components/ui";
 import { api, ApiError, fmtDate } from "@/lib/cms/client";
+import { emptyObject } from "@/lib/cms/fields";
 import { pageDef, sectionDefOf } from "@/lib/cms/registry";
 import type { ResolvedMedia } from "@/lib/cms/home-types";
 import type { MediaItem } from "@/components/cms/media";
@@ -42,8 +43,9 @@ export default function SectionEditorPage() {
   const load = useCallback(async () => {
     try {
       const d = await api<SectionData>(`/api/cms/pages/${slug}/sections/${key}`);
-      setData(d);
-      setValue(d.draft);
+      const draft = def ? { ...emptyObject(def.fields), ...d.draft } : d.draft;
+      setData({ ...d, draft });
+      setValue(draft);
       setMedia(d.media);
       setErrors([]);
     } catch (e) {

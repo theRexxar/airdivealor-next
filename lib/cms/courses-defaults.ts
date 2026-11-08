@@ -9,7 +9,7 @@ export const COURSES_PAGE_DEFAULTS: CoursesContent = {
   },
   "description": {
    "en": "SDI and TDI dive courses in Alor, from Open Water to Divemaster and technical diving. Every package includes your stay, three meals a day, gear and airport transfers.",
-   "id": "SDI and TDI dive courses in Alor, from Open Water to Divemaster and technical diving. Every package includes your stay, three meals a hari, gear and airport transfers."
+   "id": "Kursus selam SDI dan TDI di Alor, dari Open Water hingga Divemaster dan selam teknis. Setiap paket sudah termasuk penginapan, tiga kali makan sehari, peralatan, dan antar-jemput bandara."
   },
   "ogImage": {
    "mediaId": null,
@@ -197,6 +197,7 @@ export const COURSES_PAGE_DEFAULTS: CoursesContent = {
 export const COURSES_DEFAULTS: CourseContent[] = [
  {
   "slug": "owd",
+  "slugId": "",
   "name": {
    "en": "Open Water Diver",
    "id": "Open Water Diver"
@@ -456,6 +457,7 @@ export const COURSES_DEFAULTS: CourseContent[] = [
  },
  {
   "slug": "aad",
+  "slugId": "",
   "name": {
    "en": "Advanced Adventure Diver",
    "id": "Lanjutan Adventure Diver"
@@ -697,6 +699,7 @@ export const COURSES_DEFAULTS: CourseContent[] = [
  },
  {
   "slug": "adv4",
+  "slugId": "",
   "name": {
    "en": "Advanced with 4 Specialties",
    "id": "Lanjutan with 4 Specialties"
@@ -943,6 +946,7 @@ export const COURSES_DEFAULTS: CourseContent[] = [
  },
  {
   "slug": "side",
+  "slugId": "",
   "name": {
    "en": "Sidemount Specialty Diver",
    "id": "Sidemount Specialty Diver"
@@ -1181,6 +1185,7 @@ export const COURSES_DEFAULTS: CourseContent[] = [
  },
  {
   "slug": "nitrox",
+  "slugId": "",
   "name": {
    "en": "Computer Nitrox Diver",
    "id": "Computer Nitrox Diver"
@@ -1419,6 +1424,7 @@ export const COURSES_DEFAULTS: CourseContent[] = [
  },
  {
   "slug": "deep",
+  "slugId": "",
   "name": {
    "en": "Deep Specialty Diver",
    "id": "Deep Specialty Diver"
@@ -1646,6 +1652,7 @@ export const COURSES_DEFAULTS: CourseContent[] = [
  },
  {
   "slug": "night",
+  "slugId": "",
   "name": {
    "en": "Night & Low Visibility Diver",
    "id": "Night & Low Visibility Diver"
@@ -1873,6 +1880,7 @@ export const COURSES_DEFAULTS: CourseContent[] = [
  },
  {
   "slug": "rescue",
+  "slugId": "",
   "name": {
    "en": "Rescue Diver",
    "id": "Rescue Diver"
@@ -2120,6 +2128,7 @@ export const COURSES_DEFAULTS: CourseContent[] = [
  },
  {
   "slug": "msd",
+  "slugId": "",
   "name": {
    "en": "Master Scuba Diver",
    "id": "Master Scuba Diver"
@@ -2335,6 +2344,7 @@ export const COURSES_DEFAULTS: CourseContent[] = [
  },
  {
   "slug": "dm",
+  "slugId": "",
   "name": {
    "en": "SDI Divemaster",
    "id": "SDI Divemaster"
@@ -2593,6 +2603,7 @@ export const COURSES_DEFAULTS: CourseContent[] = [
  },
  {
   "slug": "tdi",
+  "slugId": "",
   "name": {
    "en": "TDI Courses",
    "id": "TDI Courses"
@@ -2745,6 +2756,7 @@ export const COURSES_DEFAULTS: CourseContent[] = [
  },
  {
   "slug": "custom",
+  "slugId": "",
   "name": {
    "en": "Custom Courses",
    "id": "Custom Courses"

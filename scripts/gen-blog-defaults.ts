@@ -7,6 +7,7 @@ import type { BlogContent, BodyBlock, CategoryContent, PostContent } from "../li
 import { CATS, POSTS } from "../lib/blog-data";
 import type { Block } from "../lib/blog-types";
 import { toId } from "../lib/i18n";
+import { slugify } from "../lib/slugify";
 import { SOCIAL } from "../lib/site";
 
 const L = (en: string) => ({ en, id: en ? toId(en) : "" });
@@ -77,6 +78,7 @@ const block = (b: Block): BodyBlock | null => {
 
 const posts: PostContent[] = POSTS.map((p) => ({
   slug: p.slug,
+  slugId: slugify(p.titleId),
   title: T(p.title, p.titleId),
   excerpt: T(p.excerpt, p.excerptId),
   date: p.date,

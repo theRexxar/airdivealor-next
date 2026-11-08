@@ -91,12 +91,12 @@ export async function getSite(slug: string): Promise<PublishedSite | null> {
     return await cmsGet<PublishedSite>(`/api/public/sites/${encodeURIComponent(slug)}`, [pageTag("dive-sites"), collectionTag("sites")]);
   } catch (e) {
     warn(`site ${slug}`, e);
-    const i = SITES_DEFAULTS.findIndex((s) => s.slug === slug);
+    const i = SITES_DEFAULTS.findIndex((s) => s.slug === slug || (!!s.slugId && s.slugId === slug));
     if (i < 0) return null;
     const n = SITES_DEFAULTS.length;
     const prev = SITES_DEFAULTS[(i + n - 1) % n];
     const next = SITES_DEFAULTS[(i + 1) % n];
-    return { site: SITES_DEFAULTS[i], index: i, total: n, prev: { slug: prev.slug, name: prev.name }, next: { slug: next.slug, name: next.name }, guide: DIVE_SITES_DEFAULTS.guide, media: {} };
+    return { site: SITES_DEFAULTS[i], index: i, total: n, prev: { slug: prev.slug, slugId: prev.slugId, name: prev.name }, next: { slug: next.slug, slugId: next.slugId, name: next.name }, guide: DIVE_SITES_DEFAULTS.guide, media: {} };
   }
 }
 
@@ -123,12 +123,12 @@ export async function getCourse(slug: string): Promise<PublishedCourse | null> {
     return await cmsGet<PublishedCourse>(`/api/public/courses/${encodeURIComponent(slug)}`, [pageTag("dive-courses"), collectionTag("courses")]);
   } catch (e) {
     warn(`course ${slug}`, e);
-    const i = COURSES_DEFAULTS.findIndex((c) => c.slug === slug);
+    const i = COURSES_DEFAULTS.findIndex((c) => c.slug === slug || (!!c.slugId && c.slugId === slug));
     if (i < 0) return null;
     const n = COURSES_DEFAULTS.length;
     const prev = COURSES_DEFAULTS[(i + n - 1) % n];
     const next = COURSES_DEFAULTS[(i + 1) % n];
-    return { course: COURSES_DEFAULTS[i], index: i, total: n, prev: { slug: prev.slug, name: prev.name }, next: { slug: next.slug, name: next.name }, detail: COURSES_PAGE_DEFAULTS.detail, media: {} };
+    return { course: COURSES_DEFAULTS[i], index: i, total: n, prev: { slug: prev.slug, slugId: prev.slugId, name: prev.name }, next: { slug: next.slug, slugId: next.slugId, name: next.name }, detail: COURSES_PAGE_DEFAULTS.detail, media: {} };
   }
 }
 
@@ -170,7 +170,7 @@ export async function getPost(slug: string): Promise<PublishedPost | null> {
   } catch (e) {
     warn(`story ${slug}`, e);
     const all = POSTS_DEFAULTS;
-    const i = all.findIndex((p) => p.slug === slug);
+    const i = all.findIndex((p) => p.slug === slug || (!!p.slugId && p.slugId === slug));
     if (i < 0) return null;
     const post = all[i];
     const others = all.filter((x) => x !== post);
