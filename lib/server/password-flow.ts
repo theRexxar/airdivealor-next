@@ -3,7 +3,7 @@ import { clientInfo, hashToken, newToken } from "./auth";
 import { db, schema } from "./db";
 import { inviteEmail, passwordChangedEmail, resetEmail } from "./emails";
 import { env } from "./env";
-import { sendMail } from "./mail";
+import { sendMail, type SendResult } from "./mail";
 
 const MINUTES = { reset: 60, invite: 7 * 24 * 60 };
 const site = () => env.SITE_URL.replace(/\/$/, "");
@@ -12,7 +12,7 @@ const site = () => env.SITE_URL.replace(/\/$/, "");
  * Create a one-time link (password reset or invitation) and email it. Any earlier unused link of the same
  * kind for this user stops working, so only the newest email is valid.
  */
-export async function sendPasswordLink(user: { id: number; email: string; name: string }, kind: "reset" | "invite", invitedBy?: string) {
+export async function sendPasswordLink(user: { id: number; email: string; name: string }, kind: "reset" | "invite", invitedBy?: string): Promise<SendResult> {
   const now = new Date();
   await db
     .update(schema.passwordTokens)
@@ -34,7 +34,7 @@ export async function sendPasswordLink(user: { id: number; email: string; name: 
     const { ip } = await clientInfo().catch(() => ({ ip: "" }));
     mail = resetEmail({ siteUrl: site(), name: user.name, url, minutes: MINUTES.reset, when: now, ip: ip || undefined });
   }
-  await sendMail({ to: { email: user.email, name: user.name }, ...mail });
+  return sendMail({ to: { email: user.email, name: user.name }, ...mail });
 }
 
 /** Tell the account owner their password changed. Never fails the change itself: problems are only logged. */

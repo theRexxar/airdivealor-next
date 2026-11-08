@@ -3,6 +3,7 @@ import { z } from "zod";
 import { audit } from "@/lib/server/audit";
 import { db, schema } from "@/lib/server/db";
 import { body, handle, HttpError, ok, requireUser } from "@/lib/server/http";
+import { NOT_CONFIGURED } from "@/lib/server/mail";
 import { sendPasswordLink } from "@/lib/server/password-flow";
 import { activeSuperAdmins, listUsers, setUserRoles } from "@/lib/server/users-service";
 
@@ -24,7 +25,8 @@ export const POST = handle(async (req) => {
   await setUserRoles(res.insertId, data.roleIds);
   await audit(me.id, "user.invited", data.email, { roles: roles.map((r) => r.name) });
   try {
-    await sendPasswordLink({ id: res.insertId, email: data.email, name: data.name }, "invite", me.name);
+    const r = await sendPasswordLink({ id: res.insertId, email: data.email, name: data.name }, "invite", me.name);
+    if (!r.sent) return ok({ id: res.insertId, emailSent: false, emailError: `The user was added, but no invitation was sent. ${NOT_CONFIGURED}` }, 201);
   } catch (e) {
     console.error("invitation email failed", e);
     return ok({ id: res.insertId, emailSent: false, emailError: "The user was added, but the invitation email couldn't be sent. Check the email settings, then use “Resend invite”." }, 201);
