@@ -56,6 +56,23 @@ npm run worker                # in a second terminal: processes uploads
 
 In production, run `npm run build && npm start` for the app and `npm run worker` as a separate long-running process. The worker needs `ffmpeg` and `ffprobe` installed.
 
+**SEO and AI crawlers:**
+- **Every page:** title, description, canonical URL, Open Graph and Twitter card from its CMS "SEO and sharing" section, or from the item for detail pages. URLs are made absolute with `SITE_URL`. Tags are always in `<head>`, for AI crawlers too (`htmlLimitedBots` in `next.config.ts`). English and Indonesian share one URL, so there is no hreflang.
+- **Structured data:** every page carries schema.org JSON-LD (`lib/seo/jsonld.ts`, rendered by `components/JsonLd.tsx`):
+  - all pages: the dive center as a local business, and the website
+  - Home: FAQ
+  - Dive sites: list, plus each site as a tourist attraction
+  - Facilities: priced packages
+  - Courses: each with its price
+  - About: about page
+  - Blog: the blog and its posts
+  - inner pages: breadcrumbs
+- **Built-in routes** (from published CMS content, always current):
+  - `/sitemap.xml`
+  - `/robots.txt`: CMS and APIs blocked; search engines and AI crawlers allowed
+  - `/llms.txt`: a Markdown summary for AI assistants
+- **CMS sign-in pages** are `noindex`.
+
 **Deploying:** the site runs on Railway (web, worker, MySQL, Redis, MinIO), built from the `Dockerfile`. See [DEPLOY.md](DEPLOY.md) for the setup, the variables, and moving `airdivealor.com`. Before the DNS move, run `npm run cms:import-remote` to copy images still hotlinked from the old site into the media library.
 
 ## How it fits together
