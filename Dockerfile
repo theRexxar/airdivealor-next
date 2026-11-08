@@ -22,5 +22,5 @@ ENV NODE_ENV=production NEXT_TELEMETRY_DISABLED=1 PORT=3000
 COPY --from=build --chown=node:node /app ./
 USER node
 EXPOSE 3000
-# Railway sets PORT; the website listens on it.
-CMD ["sh", "-c", "exec npx next start -H 0.0.0.0 -p ${PORT:-3000}"]
+# Website or media worker, chosen by APP_ROLE or the Railway service name (see scripts/start.sh).
+CMD ["sh", "scripts/start.sh"]

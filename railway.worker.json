@@ -5,7 +5,9 @@
     "dockerfilePath": "Dockerfile"
   },
   "deploy": {
-    "startCommand": "npm run worker",
+    "startCommand": "sh -c 'APP_ROLE=worker exec sh scripts/start.sh'",
+    "healthcheckPath": "/health",
+    "healthcheckTimeout": 120,
     "numReplicas": 1,
     "restartPolicyType": "ALWAYS"
   }
