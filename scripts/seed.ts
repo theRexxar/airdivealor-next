@@ -8,6 +8,7 @@ import { and, eq, ne } from "drizzle-orm";
 import { readFile } from "node:fs/promises";
 import { extname, join } from "node:path";
 import { COLLECTION_DEFAULTS, PAGE_DEFAULTS } from "../lib/cms/defaults";
+import { emptyValue } from "../lib/cms/fields";
 import { COLLECTIONS, PAGES } from "../lib/cms/registry";
 import { DEFAULT_ROLES, PERMISSION_KEYS } from "../lib/cms/permissions";
 import { db, schema } from "../lib/server/db";
@@ -115,6 +116,84 @@ async function seedCollections(cache: Map<string, number>) {
   }
 }
 
+/**
+ * Give existing items fields added since they were created (e.g. the Indonesian web address), in both draft
+ * and live content: the built-in value for the same item if there is one, else empty. Nothing else changes.
+ */
+async function backfillFields() {
+  for (const c of COLLECTIONS) {
+    const builtIn = new Map((COLLECTION_DEFAULTS[c.key] ?? []).map((x) => [x.slug, x as unknown as Record<string, unknown>]));
+    const rows = await db.select().from(schema.collectionItems).where(eq(schema.collectionItems.collection, c.key));
+    let n = 0;
+    for (const r of rows) {
+      const fill = (v: unknown) => {
+        if (!v || typeof v !== "object") return v;
+        const o = { ...(v as Record<string, unknown>) };
+        let changed = false;
+        for (const f of c.fields) {
+          if (f.key in o) continue;
+          o[f.key] = builtIn.get(r.slug)?.[f.key] ?? emptyValue(f);
+          changed = true;
+        }
+        return changed ? o : v;
+      };
+      const draft = fill(r.draft);
+      const published = fill(r.published);
+      if (draft !== r.draft || published !== r.published) {
+        await db.update(schema.collectionItems).set({ draft, published }).where(eq(schema.collectionItems.id, r.id));
+        n++;
+      }
+    }
+    if (n) console.info(`collection ${c.key}: added new fields to ${n} items`);
+  }
+}
+
+/**
+ * Indonesian search titles and descriptions that earlier versions shipped untranslated. Replaced with the
+ * new built-in Indonesian text, but only where the page still has exactly the old text (never edited).
+ */
+const OLD_SEO_ID: Record<string, { title?: string; description?: string }> = {
+  home: {
+    title: "Air Dive Alor | Scuba Diving, Courses & Dive Resort in Alor, Indonesia",
+    description: "Dive Alor with Air Dive Alor in Alor Kecil: Pantar Strait walls, muck and pelagics, SDI and TDI courses, and a village stay with three meals a hari. Diving March to November.",
+  },
+  "dive-sites": {
+    title: "Dive sites | Air Dive Alor",
+    description: "33 dive sites around Alor, Pantar and Pura: walls, pinnacles, caverns and muck bays, each with a full site guide.",
+  },
+  facilities: { description: "Stay in Alor Kecil village with three home-cooked meals a hari, and dive with our two boats. Dive packages from five hari, or pay per dive." },
+  "dive-courses": { description: "SDI and TDI dive courses in Alor, from Open Water to Divemaster and technical diving. Every package includes your stay, three meals a hari, gear and airport transfers." },
+};
+
+async function upgradeSeoTexts() {
+  for (const [slug, old] of Object.entries(OLD_SEO_ID)) {
+    const page = await db.query.pages.findFirst({ where: eq(schema.pages.slug, slug) });
+    const builtIn = PAGE_DEFAULTS[slug]?.seo as Record<string, { id?: string }> | undefined;
+    if (!page || !builtIn) continue;
+    const row = await db.query.pageSections.findFirst({ where: and(eq(schema.pageSections.pageId, page.id), eq(schema.pageSections.key, "seo")) });
+    if (!row) continue;
+    const fix = (v: unknown) => {
+      if (!v || typeof v !== "object") return v;
+      const o = { ...(v as Record<string, { en: string; id: string }>) };
+      let changed = false;
+      for (const k of ["title", "description"] as const) {
+        const want = builtIn[k]?.id;
+        if (old[k] && want && o[k]?.id === old[k]) {
+          o[k] = { ...o[k], id: want };
+          changed = true;
+        }
+      }
+      return changed ? o : v;
+    };
+    const draft = fix(row.draft);
+    const published = fix(row.published);
+    if (draft !== row.draft || published !== row.published) {
+      await db.update(schema.pageSections).set({ draft, published }).where(eq(schema.pageSections.id, row.id));
+      console.info(`page ${slug}: Indonesian search title and description updated`);
+    }
+  }
+}
+
 async function main() {
   await ensureBucket();
   await seedRoles();
@@ -122,6 +201,8 @@ async function main() {
   const cache = new Map<string, number>();
   await seedPages(cache);
   await seedCollections(cache);
+  await backfillFields();
+  await upgradeSeoTexts();
   await mediaQueue().close();
   console.info("seed done");
   process.exit(0);

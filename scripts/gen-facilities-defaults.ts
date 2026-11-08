@@ -30,7 +30,10 @@ const pkg = (name: string, sub: string, rows: [number, number, string][]): RateP
 const content: FacilitiesContent = {
   seo: {
     title: { en: "Facilities and rates | Air Dive Alor", id: "Fasilitas dan tarif | Air Dive Alor" },
-    description: L("Stay in Alor Kecil village with three home-cooked meals a day, and dive with our two boats. Dive packages from five days, or pay per dive."),
+    description: {
+      en: "Stay in Alor Kecil village with three home-cooked meals a day, and dive with our two boats. Dive packages from five days, or pay per dive.",
+      id: "Menginap di desa Alor Kecil dengan tiga kali makan masakan rumahan sehari, dan menyelam dengan dua perahu kami. Paket selam mulai lima hari, atau bayar per penyelaman.",
+    },
     ogImage: M("/latest/b-stay-shop.webp"),
   },
   hero: {

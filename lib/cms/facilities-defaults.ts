@@ -9,7 +9,7 @@ export const FACILITIES_DEFAULTS: FacilitiesContent = {
   },
   "description": {
    "en": "Stay in Alor Kecil village with three home-cooked meals a day, and dive with our two boats. Dive packages from five days, or pay per dive.",
-   "id": "Stay in Alor Kecil village with three home-cooked meals a hari, and dive with our two boats. Dive packages from five hari, or pay per dive."
+   "id": "Menginap di desa Alor Kecil dengan tiga kali makan masakan rumahan sehari, dan menyelam dengan dua perahu kami. Paket selam mulai lima hari, atau bayar per penyelaman."
   },
   "ogImage": {
    "mediaId": null,

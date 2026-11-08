@@ -15,7 +15,10 @@ const lines = (rows: string[]) => rows.map((t) => ({ text: L(t) }));
 const page: CoursesContent = {
   seo: {
     title: { en: "Dive courses | Air Dive Alor", id: "Kursus selam | Air Dive Alor" },
-    description: L("SDI and TDI dive courses in Alor, from Open Water to Divemaster and technical diving. Every package includes your stay, three meals a day, gear and airport transfers."),
+    description: {
+      en: "SDI and TDI dive courses in Alor, from Open Water to Divemaster and technical diving. Every package includes your stay, three meals a day, gear and airport transfers.",
+      id: "Kursus selam SDI dan TDI di Alor, dari Open Water hingga Divemaster dan selam teknis. Setiap paket sudah termasuk penginapan, tiga kali makan sehari, peralatan, dan antar-jemput bandara.",
+    },
     ogImage: M(""),
   },
   detail: {
@@ -61,6 +64,7 @@ const courses: CourseContent[] = COURSES.map((c) => {
   const x = DETAILS.courses[c.id];
   return {
     slug: c.id,
+    slugId: "",
     name: L(c.name),
     level: c.level,
     agency: c.id === "tdi" ? "TDI" : "SDI",

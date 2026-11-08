@@ -6,11 +6,11 @@ export const DIVE_SITES_DEFAULTS: DiveSitesContent = {
  "seo": {
   "title": {
    "en": "Dive sites | Air Dive Alor",
-   "id": "Dive sites | Air Dive Alor"
+   "id": "Titik selam | Air Dive Alor"
   },
   "description": {
    "en": "33 dive sites around Alor, Pantar and Pura: walls, pinnacles, caverns and muck bays, each with a full site guide.",
-   "id": "33 dive sites around Alor, Pantar and Pura: walls, pinnacles, caverns and muck bays, each with a full site guide."
+   "id": "33 titik selam di sekitar Alor, Pantar, dan Pura: dinding karang, pinnacle, gua, dan teluk muck, masing-masing dengan panduan lengkap."
   },
   "ogImage": {
    "mediaId": null,
@@ -216,6 +216,7 @@ export const DIVE_SITES_DEFAULTS: DiveSitesContent = {
 export const SITES_DEFAULTS: SiteContent[] = [
  {
   "slug": "kals-dream",
+  "slugId": "",
   "name": "Kal's Dream",
   "aka": "Batu Mandi",
   "area": {
@@ -363,6 +364,7 @@ export const SITES_DEFAULTS: SiteContent[] = [
  },
  {
   "slug": "limarahing-bay",
+  "slugId": "",
   "name": "Limarahing Bay",
   "aka": "",
   "area": {
@@ -516,6 +518,7 @@ export const SITES_DEFAULTS: SiteContent[] = [
  },
  {
   "slug": "dinding-bama",
+  "slugId": "",
   "name": "Dinding Bama",
   "aka": "Bama · Don Tupa · Great Wall of Pantar · Symphony No. 9",
   "area": {
@@ -657,6 +660,7 @@ export const SITES_DEFAULTS: SiteContent[] = [
  },
  {
   "slug": "anemone-city",
+  "slugId": "",
   "name": "Anemone City",
   "aka": "Kota Apuri · Clown Valley",
   "area": {
@@ -798,6 +802,7 @@ export const SITES_DEFAULTS: SiteContent[] = [
  },
  {
   "slug": "abila",
+  "slugId": "",
   "name": "Abila",
   "aka": "",
   "area": {
@@ -945,6 +950,7 @@ export const SITES_DEFAULTS: SiteContent[] = [
  },
  {
   "slug": "biatabang",
+  "slugId": "",
   "name": "Biatabang",
   "aka": "",
   "area": {
@@ -1092,6 +1098,7 @@ export const SITES_DEFAULTS: SiteContent[] = [
  },
  {
   "slug": "ampera",
+  "slugId": "",
   "name": "Ampera",
   "aka": "",
   "area": {
@@ -1251,6 +1258,7 @@ export const SITES_DEFAULTS: SiteContent[] = [
  },
  {
   "slug": "matap",
+  "slugId": "",
   "name": "Matap",
   "aka": "",
   "area": {
@@ -1398,6 +1406,7 @@ export const SITES_DEFAULTS: SiteContent[] = [
  },
  {
   "slug": "munaseli",
+  "slugId": "",
   "name": "Munaseli",
   "aka": "Yellow Corner",
   "area": {
@@ -1526,6 +1535,7 @@ export const SITES_DEFAULTS: SiteContent[] = [
  },
  {
   "slug": "gawang",
+  "slugId": "",
   "name": "Gawang",
   "aka": "The Arch",
   "area": {
@@ -1635,6 +1645,7 @@ export const SITES_DEFAULTS: SiteContent[] = [
  },
  {
   "slug": "umapura",
+  "slugId": "",
   "name": "Umapura",
   "aka": "The Edge",
   "area": {
@@ -1751,6 +1762,7 @@ export const SITES_DEFAULTS: SiteContent[] = [
  },
  {
   "slug": "hula",
+  "slugId": "",
   "name": "Hula",
   "aka": "",
   "area": {
@@ -1860,6 +1872,7 @@ export const SITES_DEFAULTS: SiteContent[] = [
  },
  {
   "slug": "molugara",
+  "slugId": "",
   "name": "Molugara",
   "aka": "",
   "area": {
@@ -1931,6 +1944,7 @@ export const SITES_DEFAULTS: SiteContent[] = [
  },
  {
   "slug": "atahari",
+  "slugId": "",
   "name": "Atahari",
   "aka": "",
   "area": {
@@ -2002,6 +2016,7 @@ export const SITES_DEFAULTS: SiteContent[] = [
  },
  {
   "slug": "seborebo",
+  "slugId": "",
   "name": "Seborebo",
   "aka": "Fish Bowl",
   "area": {
@@ -2111,6 +2126,7 @@ export const SITES_DEFAULTS: SiteContent[] = [
  },
  {
   "slug": "kepa-barat",
+  "slugId": "",
   "name": "Kepa Barat",
   "aka": "",
   "area": {
@@ -2182,6 +2198,7 @@ export const SITES_DEFAULTS: SiteContent[] = [
  },
  {
   "slug": "masjid-ampera",
+  "slugId": "",
   "name": "Masjid Ampera",
   "aka": "Mucky Mosque",
   "area": {
@@ -2310,6 +2327,7 @@ export const SITES_DEFAULTS: SiteContent[] = [
  },
  {
   "slug": "lewalu",
+  "slugId": "",
   "name": "Lewalu",
   "aka": "",
   "area": {
@@ -2381,6 +2399,7 @@ export const SITES_DEFAULTS: SiteContent[] = [
  },
  {
   "slug": "papa-jahe",
+  "slugId": "",
   "name": "Papa Jahe",
   "aka": "Mini Wall",
   "area": {
@@ -2471,6 +2490,7 @@ export const SITES_DEFAULTS: SiteContent[] = [
  },
  {
   "slug": "lobang",
+  "slugId": "",
   "name": "Lobang",
   "aka": "",
   "area": {
@@ -2587,6 +2607,7 @@ export const SITES_DEFAULTS: SiteContent[] = [
  },
  {
   "slug": "harilolong",
+  "slugId": "",
   "name": "Harilolong",
   "aka": "School's Out",
   "area": {
@@ -2702,6 +2723,7 @@ export const SITES_DEFAULTS: SiteContent[] = [
  },
  {
   "slug": "malal-pojok",
+  "slugId": "",
   "name": "Malal Pojok",
   "aka": "Anemone Corner · Carpet Shark Corner",
   "area": {
@@ -2805,6 +2827,7 @@ export const SITES_DEFAULTS: SiteContent[] = [
  },
  {
   "slug": "malal",
+  "slugId": "",
   "name": "Malal",
   "aka": "Anemone Fields · Carpet Shark Slope",
   "area": {
@@ -2902,6 +2925,7 @@ export const SITES_DEFAULTS: SiteContent[] = [
  },
  {
   "slug": "melangwala",
+  "slugId": "",
   "name": "Melangwala",
   "aka": "Pool Party",
   "area": {
@@ -3018,6 +3042,7 @@ export const SITES_DEFAULTS: SiteContent[] = [
  },
  {
   "slug": "pasir-merah",
+  "slugId": "",
   "name": "Pasir Merah",
   "aka": "Red Sand",
   "area": {
@@ -3133,6 +3158,7 @@ export const SITES_DEFAULTS: SiteContent[] = [
  },
  {
   "slug": "pasar-sulambi",
+  "slugId": "",
   "name": "Pasar Sulambi",
   "aka": "Sopi Market",
   "area": {
@@ -3242,6 +3268,7 @@ export const SITES_DEFAULTS: SiteContent[] = [
  },
  {
   "slug": "plakang",
+  "slugId": "",
   "name": "Plakang",
   "aka": "Rumah Biru",
   "area": {
@@ -3351,6 +3378,7 @@ export const SITES_DEFAULTS: SiteContent[] = [
  },
  {
   "slug": "beipa",
+  "slugId": "",
   "name": "Beipa",
   "aka": "",
   "area": {
@@ -3460,6 +3488,7 @@ export const SITES_DEFAULTS: SiteContent[] = [
  },
  {
   "slug": "motonglang",
+  "slugId": "",
   "name": "Motonglang",
   "aka": "The Cathedral",
   "area": {
@@ -3588,6 +3617,7 @@ export const SITES_DEFAULTS: SiteContent[] = [
  },
  {
   "slug": "goa-wolang",
+  "slugId": "",
   "name": "Goa Wolang",
   "aka": "Wolang Cave",
   "area": {
@@ -3710,6 +3740,7 @@ export const SITES_DEFAULTS: SiteContent[] = [
  },
  {
   "slug": "halerman",
+  "slugId": "",
   "name": "Halerman",
   "aka": "",
   "area": {
@@ -3825,6 +3856,7 @@ export const SITES_DEFAULTS: SiteContent[] = [
  },
  {
   "slug": "kelalaka",
+  "slugId": "",
   "name": "Kelalaka",
   "aka": "Crucifixion",
   "area": {
@@ -3947,6 +3979,7 @@ export const SITES_DEFAULTS: SiteContent[] = [
  },
  {
   "slug": "bakalang",
+  "slugId": "",
   "name": "Bakalang",
   "aka": "Bakalang Jetty",
   "area": {

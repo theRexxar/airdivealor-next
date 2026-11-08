@@ -4,6 +4,8 @@ import type { ResolvedMedia } from "./home-types";
 
 export interface CourseContent {
   slug: string;
+  /** Indonesian web address; empty or missing = same as slug. */
+  slugId?: string;
   name: I18n;
   level: string;
   agency: string;
@@ -58,8 +60,8 @@ export interface PublishedCourse {
   course: CourseContent;
   index: number;
   total: number;
-  prev: { slug: string; name: I18n };
-  next: { slug: string; name: I18n };
+  prev: { slug: string; slugId?: string; name: I18n };
+  next: { slug: string; slugId?: string; name: I18n };
   detail: CoursesContent["detail"];
   media: Record<string, ResolvedMedia>;
 }

@@ -12,8 +12,11 @@ const M = (url: string) => ({ mediaId: null, url });
 
 const page: DiveSitesContent = {
   seo: {
-    title: L("Dive sites | Air Dive Alor"),
-    description: L("33 dive sites around Alor, Pantar and Pura: walls, pinnacles, caverns and muck bays, each with a full site guide."),
+    title: { en: "Dive sites | Air Dive Alor", id: "Titik selam | Air Dive Alor" },
+    description: {
+      en: "33 dive sites around Alor, Pantar and Pura: walls, pinnacles, caverns and muck bays, each with a full site guide.",
+      id: "33 titik selam di sekitar Alor, Pantar, dan Pura: dinding karang, pinnacle, gua, dan teluk muck, masing-masing dengan panduan lengkap.",
+    },
     ogImage: M("/sites/don-tupa.jpg"),
   },
   guide: {
@@ -67,6 +70,7 @@ const page: DiveSitesContent = {
 
 const sites: SiteContent[] = SITES.map((s) => ({
   slug: s.slug,
+  slugId: "",
   name: s.name,
   aka: s.aka,
   area: L(s.area || "Alor"),

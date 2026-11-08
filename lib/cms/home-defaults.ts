@@ -6,11 +6,11 @@ export const HOME_DEFAULTS: HomeContent = {
  "seo": {
   "title": {
    "en": "Air Dive Alor | Scuba Diving, Courses & Dive Resort in Alor, Indonesia",
-   "id": "Air Dive Alor | Scuba Diving, Courses & Dive Resort in Alor, Indonesia"
+   "id": "Air Dive Alor | Selam, Kursus Selam & Dive Resort di Alor, Indonesia"
   },
   "description": {
    "en": "Dive Alor with Air Dive Alor in Alor Kecil: Pantar Strait walls, muck and pelagics, SDI and TDI courses, and a village stay with three meals a day. Diving March to November.",
-   "id": "Dive Alor with Air Dive Alor in Alor Kecil: Pantar Strait walls, muck and pelagics, SDI and TDI courses, and a village stay with three meals a hari. Diving March to November."
+   "id": "Menyelam di Alor bersama Air Dive Alor di Alor Kecil: dinding karang Selat Pantar, muck dive dan ikan pelagis, kursus selam SDI dan TDI, serta menginap di desa dengan tiga kali makan sehari. Musim selam Maret sampai November."
   },
   "ogImage": {
    "mediaId": null,

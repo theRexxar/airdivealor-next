@@ -10,21 +10,29 @@ npm run build
 
 ## Pages
 
-| Route | Prototype |
-| --- | --- |
-| `/` | `HomeDescent.dc.html`: loading screen, depth gauge, prices, why Alor, dive sites, safety stop, reviews, FAQ and the 3-step booking form (`#b-prices`, `#b-faq`, `#b-book`) |
-| `/dive-sites`, `/dive-sites/[slug]` | `DiveSites.dc.html`: 33 sites, 9 at a time, and a guide page per site |
-| `/facilities-and-rates` | `FacilitiesRates.dc.html` |
-| `/dive-courses`, `/dive-courses/[id]` | `DiveCourses.dc.html`: 12 courses and a detail page per course |
-| `/about-us` | `AboutUs.dc.html` |
-| `/blog`, `/blog/[slug]` | `Blog.dc.html`, `BlogPost.dc.html` |
+Every page has an English and an Indonesian address. English is the default.
+
+| English | Indonesian | Prototype |
+| --- | --- | --- |
+| `/en` | `/id` | `HomeDescent.dc.html`: loading screen, depth gauge, prices, why Alor, dive sites, safety stop, reviews, FAQ and the 3-step booking form (`#b-prices`, `#b-faq`, `#b-book`) |
+| `/en/dive-sites`, `/en/dive-sites/[slug]` | `/id/titik-selam`, `/id/titik-selam/[slug]` | `DiveSites.dc.html`: 33 sites, 9 at a time, and a guide page per site |
+| `/en/facilities-and-rates` | `/id/fasilitas-dan-tarif` | `FacilitiesRates.dc.html` |
+| `/en/dive-courses`, `/en/dive-courses/[id]` | `/id/kursus-selam`, `/id/kursus-selam/[id]` | `DiveCourses.dc.html`: 12 courses and a detail page per course |
+| `/en/about-us` | `/id/tentang-kami` | `AboutUs.dc.html` |
+| `/en/blog`, `/en/blog/[slug]` | `/id/blog`, `/id/blog/[slug]` | `Blog.dc.html`, `BlogPost.dc.html` |
 
 The prototypes' overlays (site guide, course detail, story picker) are real pages here, so each one has its own link.
 
 ## Content and translations
 
 - Content is in `lib/`: `home-data.ts`, `sites-data.ts`, `courses-data.ts`, `blog-data.ts`, all generated from the prototype data files. Edit them there.
-- EN / ID switch: `lib/i18n.tsx`. The dictionary comes from the prototypes (`lib/i18n-dict.ts`, `lib/page-dicts.ts`, and the site text in `lib/sites-data.ts`), plus a few strings added in `lib/i18n.tsx`. The choice is saved in `localStorage` under `ada-lang`, the same key the prototypes use. As in the prototypes, course descriptions and some data values stay in English.
+- **Languages in the URL** (`lib/i18n-routes.ts`, `proxy.ts`):
+  - The app's folders are `app/[lang]/...` with the English segment names. The proxy serves the Indonesian segments (`/id/titik-selam/...`) from those folders, and redirects a segment in the wrong language (`/id/dive-sites` → `/id/titik-selam`).
+  - Addresses without a language (old links, `/dive-sites`) redirect to the visitor's last language (cookie `lang`), or to English.
+  - Dive sites, courses and stories have an English **Web address** and an optional **Web address (Indonesian)** in the CMS. Without an Indonesian one, the English address is used under `/id`. Opening an item with the other language's address redirects to the right one.
+  - The **EN / ID** switch (`components/LangSwitch.tsx`) goes to the same page in the other language, with its own address. Each page passes both addresses to it through `AlternatesProvider`.
+  - Links in content (`/dive-courses`, `/#b-faq`) are put into the current language as they render (`components/LocalLink.tsx`), so CMS texts don't need a language prefix.
+- Interface texts: `lib/i18n.tsx`. The dictionary comes from the prototypes (`lib/i18n-dict.ts`, `lib/page-dicts.ts`, and the site text in `lib/sites-data.ts`), plus a few strings added in `lib/i18n.tsx`. As in the prototypes, course descriptions and some data values stay in English.
 - Design tokens are in `app/tokens.css`. Buttons, tags, alerts, form fields, ratings and icons copy the design system, including its Lucide icon font (`app/fonts/lucide.woff2`).
 
 ## Photos
@@ -55,6 +63,24 @@ npm run worker                # in a second terminal: processes uploads
 ```
 
 In production, run `npm run build && npm start` for the app and `npm run worker` as a separate long-running process. The worker needs `ffmpeg` and `ffprobe` installed.
+
+**SEO and AI crawlers:**
+- **Every page:** title, description, canonical URL, Open Graph and Twitter card from its CMS "SEO and sharing" section, or from the item for detail pages. URLs are made absolute with `SITE_URL`. Tags are always in `<head>`, for AI crawlers too (`htmlLimitedBots` in `next.config.ts`).
+- **Per language:** each page's canonical URL is its own language's address, with `hreflang` links to both versions (`x-default` is English), `og:locale` (`en_US` / `id_ID`), `<html lang>`, and the title and description in that language.
+- **Structured data:** every page carries schema.org JSON-LD in its language (`inLanguage`, localized names and breadcrumbs) (`lib/seo/jsonld.ts`, rendered by `components/JsonLd.tsx`):
+  - all pages: the dive center as a local business, and the website
+  - Home: FAQ
+  - Dive sites: list, plus each site as a tourist attraction
+  - Facilities: priced packages
+  - Courses: each with its price
+  - About: about page
+  - Blog: the blog and its posts
+  - inner pages: breadcrumbs
+- **Built-in routes** (from published CMS content, always current):
+  - `/sitemap.xml`: every page in both languages, each with its `hreflang` alternates
+  - `/robots.txt`: CMS and APIs blocked; search engines and AI crawlers allowed
+  - `/llms.txt`: a Markdown summary for AI assistants (English links, and how the Indonesian addresses work)
+- **CMS sign-in pages** are `noindex`.
 
 **Deploying:** the site runs on Railway (web, worker, MySQL, Redis, MinIO), built from the `Dockerfile`. See [DEPLOY.md](DEPLOY.md) for the setup, the variables, and moving `airdivealor.com`. Before the DNS move, run `npm run cms:import-remote` to copy images still hotlinked from the old site into the media library.
 

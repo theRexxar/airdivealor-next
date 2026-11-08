@@ -1,15 +1,16 @@
 "use client";
 
-import Link from "next/link";
+import Link from "@/components/LocalLink";
 import { useEffect, useRef, useState } from "react";
 import { useLang } from "@/lib/i18n";
+import { LangSwitch } from "./LangSwitch";
 import { ROUTES, waLink } from "@/lib/site";
 import { ButtonLink, Button, Icon } from "./ui";
 
 type Current = "home" | "diveSites" | "about" | "blog" | "facilities" | "courses";
 
 export function SiteHeader({ current }: { current?: Current }) {
-  const { t, lang, toggle } = useLang();
+  const { t } = useLang();
   const [menuOpen, setMenuOpen] = useState(false);
   const pricing = useRef<HTMLDetailsElement>(null);
 
@@ -67,10 +68,7 @@ export function SiteHeader({ current }: { current?: Current }) {
       </nav>
 
       <div className="site-header__actions">
-        <button type="button" className="lang-toggle" onClick={toggle}>
-          <Icon name="globe" size={18} />
-          {lang === "EN" ? "EN / ID" : "ID / EN"}
-        </button>
+        <LangSwitch />
         <span className="wide-only">
           <ButtonLink href={waLink()} external variant="secondary" icon="message-circle" iconOnly aria-label="WhatsApp" />
         </span>

@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/components/LocalLink";
 import type React from "react";
 import type { AnchorHTMLAttributes, ButtonHTMLAttributes, CSSProperties, ReactNode } from "react";
 
