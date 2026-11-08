@@ -15,7 +15,9 @@ export const POST = handle(async (req) => {
   const u = await db.query.users.findFirst({ where: eq(schema.users.email, email) });
   if (u && u.status === "active") {
     try {
-      await sendPasswordLink(u, "reset");
+      const r = await sendPasswordLink(u, "reset");
+      // The answer stays the same either way (no account probing); the log says why nothing arrived.
+      if (!r.sent) console.warn(`[mail] reset link for user ${u.id} not sent: BREVO_API_KEY is not set`);
       await audit(u.id, "auth.reset_requested");
     } catch (e) {
       console.error("reset email failed", e);
