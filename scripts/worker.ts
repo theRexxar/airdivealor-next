@@ -5,6 +5,7 @@
 import { Worker } from "bullmq";
 import { eq } from "drizzle-orm";
 import { execFile } from "node:child_process";
+import { createServer } from "node:http";
 import { mkdtemp, readFile, rm, stat, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -15,6 +16,7 @@ import { db, schema } from "../lib/server/db";
 import type { MediaVariant } from "../lib/server/db/schema";
 import { MEDIA_QUEUE, type MediaJob } from "../lib/server/queue";
 import { redis } from "../lib/server/redis";
+import { checkMysql, checkRedis, printStartupReport } from "../lib/server/startup-report";
 import { ensureBucket, getObjectBytes, putObject } from "../lib/server/storage";
 
 const run = promisify(execFile);
@@ -70,8 +72,26 @@ async function processVideo(id: number, bytes: Uint8Array) {
   }
 }
 
+const CONCURRENCY = 2;
+const stats = { startedAt: new Date(), done: 0, failed: 0 };
+
+/**
+ * Health endpoint on $PORT (Railway sets it), so Railway can check the worker like the website:
+ * any path answers 200 when MySQL and Redis are reachable, 503 otherwise.
+ */
+function serveHealth() {
+  const port = Number(process.env.PORT);
+  if (!port) return;
+  createServer(async (_req, res) => {
+    const [mysql, rds] = await Promise.all([checkMysql(), checkRedis()]);
+    const ok = mysql.ok && rds.ok;
+    res.writeHead(ok ? 200 : 503, { "content-type": "application/json", "cache-control": "no-store" });
+    res.end(JSON.stringify({ ok, role: "worker", mysql: mysql.ok ? "ok" : "down", redis: rds.ok ? "ok" : "down", queue: rds.detail.split("; ")[1] ?? null, startedAt: stats.startedAt, done: stats.done, failed: stats.failed }));
+  }).listen(port, "0.0.0.0", () => console.info(`[worker] health check on port ${port}`));
+}
+
 async function main() {
-  await ensureBucket();
+  await ensureBucket().catch((e) => console.error(`[worker] storage not ready yet: ${e instanceof Error ? e.message : e}`));
   const worker = new Worker<MediaJob>(
     MEDIA_QUEUE,
     async (job) => {
@@ -83,15 +103,21 @@ async function main() {
       else await processVideo(m.id, bytes);
       return "ok";
     },
-    { connection: redis(), concurrency: 2 },
+    { connection: redis(), concurrency: CONCURRENCY },
   );
-  worker.on("completed", (job) => console.info(`[worker] media ${job.data.mediaId} ready`));
+  worker.on("completed", (job) => {
+    stats.done++;
+    console.info(`[worker] media ${job.data.mediaId} ready`);
+  });
   worker.on("failed", async (job, err) => {
     if (!job) return;
     const final = job.attemptsMade >= (job.opts.attempts ?? 1);
+    stats.failed++;
     console.error(`[worker] media ${job.data.mediaId} failed (attempt ${job.attemptsMade}): ${err.message}`);
     if (final) await db.update(schema.media).set({ status: "failed", error: err.message.slice(0, 1000) }).where(eq(schema.media.id, job.data.mediaId));
   });
+  serveHealth();
+  await printStartupReport("worker", [`queue "${MEDIA_QUEUE}", ${CONCURRENCY} jobs at a time, 3 attempts per file`]);
   console.info("[worker] waiting for media jobs");
   const stop = async () => {
     await worker.close();

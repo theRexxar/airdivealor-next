@@ -5,7 +5,7 @@ The site runs on [Railway](https://railway.com) as one project with five service
 | Service | What it is | Config |
 | --- | --- | --- |
 | **web** | Website + CMS (Next.js) | `railway.json`: runs migrations before each deploy, health check on `/api/health` |
-| **worker** | Media processing (sharp, ffmpeg) | `railway.worker.json`: same image, runs `npm run worker` |
+| **worker** | Media processing (sharp, ffmpeg) | `railway.worker.json`: same image, runs the worker, health check on `/health` |
 | **MySQL** | Content, users, activity log | Railway MySQL database, with a volume |
 | **Redis** | Upload queue (BullMQ), rate limits | Railway Redis database |
 | **MinIO** | Photo and video storage (S3-compatible) | A Docker image service with a volume, public at `media.airdivealor.com` |
@@ -17,9 +17,10 @@ Why these choices:
 ## 1. Create the project
 
 1. In Railway, create a new project. Add the **GitHub repo** `theRexxar/airdivealor-next` (branch `main`) and rename the service to **web**.
-2. Add the repo again as a second service, named **worker**. In **Settings → Config-as-code → Railway config file**, set the path to `/railway.worker.json`, with the leading slash.
-   - **Don't skip this.** Without it, the worker reads the default `railway.json` and starts the website instead of the worker.
-   - Config files override the dashboard, so changing only the start command in the dashboard doesn't help.
+2. Add the repo again as a second service, named **worker**.
+   - **The image picks its role at start** (`scripts/start.sh`). A service whose name contains `worker`, or that has the variable `APP_ROLE=worker`, runs the media worker. Anything else runs the website. So the worker starts as the worker on **every** deploy, whichever config file it reads.
+   - **Recommended:** in **Settings → Config-as-code → Railway config file**, set `/railway.worker.json` (with the leading slash). It sets `APP_ROLE=worker`, health-checks `/health`, and always restarts the worker if it stops.
+   - **Auto-deploy:** in **Settings → Source**, connect the repo with branch `main`, and keep automatic deploys on. Then every merge to `main` redeploys **both** web and worker. If "Wait for CI" is on, deploys only start after GitHub checks pass.
    - The worker doesn't need a public domain.
 3. Add **MySQL** and **Redis** from **New → Database**.
 4. Add **MinIO**: **New → Docker image** `chainguard/minio:latest` (the official `minio/minio` image is no longer published on Docker Hub). Name it **MinIO**, then:
@@ -70,9 +71,9 @@ Before `media.airdivealor.com` is live, you can test with MinIO's Railway domain
 ## 3. First deploy
 
 1. Deploy **web** and **worker**. On every deploy, web runs `npm run db:migrate` before it starts (the pre-deploy command in `railway.json`).
-2. **Check that the worker really is the worker.** Its deploy **Details** should show the start command `npm run worker`, and its **Deploy Logs** should show `[worker] waiting for media jobs`.
-   - If the logs show `▲ Next.js … Ready`, the worker is running the website: fix the config file path from step 1.2 and redeploy.
-   - Jobs queued in the meantime are processed as soon as the real worker starts.
+2. **Read the startup report in each service's Deploy Logs** (see [After every deploy](#after-every-deploy-the-startup-report)). The worker's report must start with `[start] role: worker` and end with `[worker] waiting for media jobs`.
+   - If it says `role: web`, the worker service isn't named `worker`: set the variable `APP_ROLE=worker` on it, or use `/railway.worker.json` as in step 1.2, and redeploy.
+   - Jobs queued in the meantime are processed as soon as the worker starts.
 3. Open a shell in web with the Railway CLI, `railway ssh` (select the web service), and run:
    - `npm run cms:seed`: roles, the first admin, all page content, dive sites, courses, blog stories and categories, plus the local photos.
    - `npm run cms:import-remote -- --dry-run`: lists the images still hotlinked from the old `airdivealor.com` and Wix (about 60), and the old-blog links.
@@ -106,9 +107,39 @@ Before `media.airdivealor.com` is live, you can test with MinIO's Railway domain
 
 `npm run cms:import-remote -- --dry-run` lists these links.
 
+## After every deploy: the startup report
+
+When a deploy starts, both services print what they are running and whether everything they need is reachable. No passwords or keys are printed, only hosts, names and whether a key is set. Railway → service → **Deployments** → the deploy → **Deploy Logs**:
+
+```
+[start] role: worker (APP_ROLE=worker, service=worker)
+[worker] health check on port 8080
+[worker] ── Air Dive Alor media worker started ──
+[worker] deployment: service worker, environment production, commit 3f9c2e1 (main), deployment 8c1d2e3f
+[worker] queue "media-processing", 2 jobs at a time, 3 attempts per file
+[worker] ✓ mysql   mysql.railway.internal:3306/railway, 2 migrations applied
+[worker] ✓ redis   redis.railway.internal:6379; media queue: 0 waiting, 0 active, 0 retrying, 0 failed
+[worker] ✓ storage endpoint minio.railway.internal:9000, bucket airdivealor-media, public https://media.airdivealor.com/airdivealor-media
+[worker] ✓ ffmpeg  ffmpeg version 5.1.x; ffprobe version 5.1.x
+[worker] ✓ ready: all checks passed
+[worker] waiting for media jobs
+```
+
+The website prints the same report with `[web]`, plus the site URL and an **email** line. The email line checks the Brevo key against Brevo, which catches a missing key, an SMTP key or an "unrecognised IP address".
+
+The symbols:
+- `✓`: OK.
+- `!`: a warning; the service still runs. Example: `! email BREVO_API_KEY is not set`, which means invitations and password emails are **not** sent.
+- `✗`: a problem. The health check (`/api/health` for web, `/health` for worker) then answers 503, so Railway doesn't switch to the broken deploy.
+
+The worker's `/health` also shows its queue and how many files it has processed since it started.
+
 ## 5. Running it
 
-- **Deploys:** push to `main`. Railway builds the image, runs migrations, waits for `/api/health`, then switches traffic.
+- **Deploys:** merge to `main`. Railway builds the image and redeploys web and worker.
+  - Migrations run before the new version starts. They hold a database lock, so web and worker deploying together never apply one twice.
+  - Each service switches over once its health check passes.
+  - Check the startup report afterwards.
 - **Backups:**
   - Turn on volume backups for **MySQL** and **MinIO** in Railway (volume → Backups) and set a schedule.
   - Also take an occasional off-site copy:
