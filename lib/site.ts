@@ -8,6 +8,8 @@ export const ROUTES = {
   book: "/#b-book",
   prices: "/#b-prices",
   faq: "/#b-faq",
+  /** All questions, with a page for those that need a longer answer. */
+  faqPages: "/faq",
 } as const;
 
 export const WA_DEFAULT = "hi! airdive i'would like to check diving slot";

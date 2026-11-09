@@ -1,5 +1,6 @@
 import { and, asc, eq } from "drizzle-orm";
 import { collectMediaIds } from "@/lib/cms/fields";
+import { sanitizeRichFields } from "./rich-sanitize";
 import { PAGE_DEFAULTS } from "@/lib/cms/defaults";
 import { pageDef, sectionDefOf } from "@/lib/cms/registry";
 import { db, schema } from "./db";
@@ -50,7 +51,8 @@ export async function pageContent(slug: string, opts: { draft?: boolean } = {}) 
     const s = def.sections.find((x) => x.key === r.key);
     if (!s) continue;
     const value = opts.draft ? r.draft : r.published;
-    if (value) content[r.key] = value;
+    // Rich text is cleaned here, so every page and preview gets safe HTML.
+    if (value) content[r.key] = sanitizeRichFields(s.fields, value);
     collectMediaIds(s.fields, content[r.key], mediaIds);
     if (r.publishedAt && (!publishedAt || r.publishedAt > publishedAt)) publishedAt = r.publishedAt;
     if (!s.fixed && r.enabled && (value || opts.draft)) order.push(r.key);

@@ -146,7 +146,17 @@ export const HOME_SECTIONS: SectionDef[] = [
     description: "Questions and answers, and the WhatsApp help box.",
     fields: [
       ...eyebrowTitle(),
-      F.list("items", "Questions", "Question", [F.i18n("q", "Question", { required: true }), F.i18n("a", "Answer", { required: true, multiline: true })], { titleKey: "q" }),
+      F.list(
+        "items",
+        "Questions",
+        "Question",
+        [
+          F.i18n("q", "Question", { required: true }),
+          F.i18n("a", "Answer", { required: true, multiline: true }),
+          F.ref("page", "Full answer", "faqs", { help: "Optional. A question from FAQ questions with a full answer: adds a “Read the full answer” link." }),
+        ],
+        { titleKey: "q" },
+      ),
       F.group("help", "Help box", [F.i18n("title", "Title"), F.i18n("text", "Text", { multiline: true }), F.i18n("button", "Button")]),
     ],
   },

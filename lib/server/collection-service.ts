@@ -1,5 +1,6 @@
 import { and, asc, eq, ne } from "drizzle-orm";
 import { collectMediaIds } from "@/lib/cms/fields";
+import { sanitizeRichFields } from "./rich-sanitize";
 import { schemaFor, type Field } from "@/lib/cms/fields";
 import { collectionDef, COLLECTIONS, itemTitle, PAGES } from "@/lib/cms/registry";
 import { db, schema } from "./db";
@@ -73,7 +74,8 @@ export async function liveItems<T = Record<string, unknown>>(key: string, opts: 
   const rows = await listItems(key);
   const items = bySortField(
     def,
-    rows.filter((r) => (opts.draft ? true : r.enabled && r.published)).map((r) => (opts.draft ? r.draft : r.published) as Record<string, unknown>),
+    // Rich text is cleaned here, so every page and preview gets safe HTML.
+    rows.filter((r) => (opts.draft ? true : r.enabled && r.published)).map((r) => sanitizeRichFields(def.fields, (opts.draft ? r.draft : r.published) as Record<string, unknown>)),
     (x) => x,
   ) as T[];
   const mediaIds = new Set<number>();

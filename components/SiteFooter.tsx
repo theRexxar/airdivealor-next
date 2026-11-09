@@ -42,7 +42,7 @@ export function SiteFooter() {
         <nav aria-label="Plan your trip" className="site-footer__col">
           <span className="site-footer__heading">{t("Plan your trip")}</span>
           <Link href={ROUTES.prices}>{t("Prices")}</Link>
-          <Link href={ROUTES.faq}>{t("FAQ")}</Link>
+          <Link href={ROUTES.faqPages}>{t("FAQ")}</Link>
           <Link href={ROUTES.book}>{t("Book")}</Link>
         </nav>
         <nav aria-label="Follow us" className="site-footer__col">

@@ -133,13 +133,19 @@ export class Ld {
     };
   }
 
-  faq(items: { q: I18n; a: I18n }[]): Node | null {
-    const qs = items.filter((x) => this.tx(x.q) && this.tx(x.a));
+  /** Questions and answers. `path` (an answer's own page) becomes the answer's URL; `id` defaults to the Home page FAQ. */
+  faq(items: { q: I18n; a: I18n; path?: string; text?: string }[], id = `${this.site}/#faq`): Node | null {
+    const qs = items.filter((x) => this.tx(x.q) && (x.text || this.tx(x.a)));
     if (!qs.length) return null;
     return {
       "@type": "FAQPage",
-      "@id": `${this.site}/#faq`,
-      mainEntity: qs.map((x) => ({ "@type": "Question", name: this.tx(x.q), acceptedAnswer: { "@type": "Answer", text: this.tx(x.a) } })),
+      "@id": id,
+      inLanguage: this.lang,
+      mainEntity: qs.map((x) => ({
+        "@type": "Question",
+        name: this.tx(x.q),
+        acceptedAnswer: { "@type": "Answer", text: trim(x.text || this.tx(x.a), 3000), ...(x.path ? { url: this.url(x.path) } : {}) },
+      })),
     };
   }
 

@@ -4,9 +4,10 @@ import type { CourseContent, PublishedCourse, PublishedCourses } from "@/lib/cms
 import type { PublishedDiveSites, PublishedSite, SiteContent } from "@/lib/cms/dive-sites-types";
 import type { PublishedFacilities } from "@/lib/cms/facilities-types";
 import type { HomeContent, PublishedHome } from "@/lib/cms/home-types";
+import { hasFaqPage, toFaqCard, type FaqContent, type FaqPageContent, type PublishedFaq, type PublishedFaqs } from "@/lib/cms/faq-types";
 import { collectMediaIds } from "@/lib/cms/fields";
 import { POST_FIELDS } from "@/lib/cms/post-fields";
-import { liveItems } from "./collection-service";
+import { listItems, liveItems, requireCollection } from "./collection-service";
 import { HttpError } from "./http";
 import { resolveMedia } from "./media-service";
 import { pageContent } from "./page-service";
@@ -25,7 +26,14 @@ async function homePayload(opts: Opts): Promise<PublishedHome> {
   for (const x of Object.values(sites)) {
     if (x.photo.mediaId) ids.add(x.photo.mediaId);
   }
-  return { content, order: page.order as PublishedHome["order"], media: await resolveMedia(ids), sites, publishedAt: page.publishedAt };
+  // FAQ questions the FAQ section links to, when they are live and have a full answer.
+  const wantedFaqs = new Set(content.faq.items.map((x) => x.page).filter(Boolean));
+  const faqPages = wantedFaqs.size
+    ? Object.fromEntries(
+        (await liveItems<FaqContent>("faqs", opts)).items.filter((f) => wantedFaqs.has(f.slug) && hasFaqPage(f)).map((f) => [f.slug, { slug: f.slug, slugId: f.slugId || undefined }]),
+      )
+    : {};
+  return { content, order: page.order as PublishedHome["order"], media: await resolveMedia(ids), sites, faqPages, publishedAt: page.publishedAt };
 }
 
 /** Dive sites page: page content plus every published, visible site in order. */
@@ -71,7 +79,34 @@ async function plainPayload(slug: string, opts: Opts) {
   return { content: page.content, order: page.order, media: await resolveMedia(new Set(page.mediaIds)), publishedAt: page.publishedAt };
 }
 
+/** FAQ page: page content plus every published question in order. */
+async function faqsPayload(opts: Opts): Promise<PublishedFaqs> {
+  const page = await pageContent("faq", opts);
+  const { items } = await liveItems<FaqContent>("faqs", opts);
+  return { content: page.content as unknown as FaqPageContent, order: page.order, faqs: items.map(toFaqCard), media: await resolveMedia(new Set(page.mediaIds)), publishedAt: page.publishedAt };
+}
+
+/** One question with a full answer, more questions (same group first) and the shared answer-page texts. Null without a full answer. */
+export async function publicFaqPayload(slug: string, opts: Opts = {}): Promise<PublishedFaq | null> {
+  const def = requireCollection("faqs");
+  const { items } = await liveItems<FaqContent>("faqs", opts);
+  const faq = items.find((x) => x.slug === slug || (!!x.slugId && x.slugId === slug));
+  if (!faq || !hasFaqPage(faq)) return null;
+  const others = items.filter((x) => x !== faq);
+  const more = others.filter((x) => x.category === faq.category).concat(others.filter((x) => x.category !== faq.category)).slice(0, 4).map(toFaqCard);
+  const page = await pageContent("faq", opts);
+  const row = (await listItems("faqs")).find((r) => r.slug === faq.slug);
+  return {
+    faq,
+    more,
+    texts: (page.content as unknown as FaqPageContent).detail,
+    media: await resolveMedia(collectMediaIds(def.fields, faq)),
+    publishedAt: (opts.draft ? row?.draftUpdatedAt : row?.publishedAt)?.toISOString() ?? null,
+  };
+}
+
 export async function publicPagePayload(slug: string, opts: Opts = {}) {
+  if (slug === "faq") return faqsPayload(opts);
   if (slug === "home") return homePayload(opts);
   if (slug === "dive-sites") return diveSitesPayload(opts);
   if (slug === "dive-courses") return coursesPayload(opts);
@@ -131,6 +166,7 @@ export async function publicItemPayload(collection: string, slug: string, opts: 
   if (collection === "sites") return publicSitePayload(slug, opts);
   if (collection === "courses") return publicCoursePayload(slug, opts);
   if (collection === "posts") return publicPostPayload(slug, opts);
+  if (collection === "faqs") return publicFaqPayload(slug, opts);
   throw new HttpError(404, "No public page for this collection.");
 }
 

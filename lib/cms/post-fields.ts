@@ -11,6 +11,11 @@ const caption = () => F.i18n("caption", "Caption", { help: "Optional. Also used 
 
 /** The kinds of blocks a story body is made of. */
 export const BODY_BLOCKS: BlockKind[] = [
+  {
+    type: "rich",
+    label: "Rich text",
+    fields: [F.richtext("text", "Text", { required: true, help: "Write freely with headings, lists, links, pictures from the media library and YouTube or Vimeo videos." })],
+  },
   { type: "p", label: "Paragraph", fields: [F.i18n("text", "Text", { required: true, multiline: true, max: 5000 })] },
   { type: "h", label: "Heading", fields: [F.i18n("text", "Heading", { required: true, max: 200 })] },
   { type: "img", label: "Image", fields: [F.image("photo", "Photo"), caption()], titleKey: "caption" },

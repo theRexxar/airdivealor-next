@@ -4,6 +4,7 @@
  * Shared by server and client, so keep it free of server-only imports.
  */
 import { z } from "zod";
+import { richMediaIds, richText } from "../rich-text";
 
 /** Text in both site languages. */
 export interface I18n {
@@ -27,6 +28,8 @@ export type Field =
   | (Base & { type: "text" | "url"; required?: boolean; max?: number; placeholder?: string })
   | (Base & { type: "textarea"; required?: boolean; max?: number })
   | (Base & { type: "i18n"; required?: boolean; multiline?: boolean; max?: number })
+  /** Formatted text in both languages (HTML from the Quill editor): headings, lists, links, images, videos. */
+  | (Base & { type: "richtext"; required?: boolean; max?: number })
   | (Base & { type: "number"; min?: number; max?: number; step?: number; required?: boolean })
   | (Base & { type: "boolean" })
   | (Base & { type: "select"; options: { value: string; label: string }[]; required?: boolean })
@@ -72,6 +75,11 @@ function fieldSchema(f: Field): z.ZodTypeAny {
       return z.union([z.literal(""), z.string().trim().max(500).refine((v) => /^(https?:\/\/|\/|#|mailto:)/.test(v), "Use a full URL, a path starting with /, or #anchor")]);
     case "i18n":
       return i18nSchema(f);
+    case "richtext": {
+      const s = z.string().max(f.max ?? 200_000, "This text is too long");
+      const en = f.required ? s.refine((v) => richText(v).trim().length > 0, "English text is required") : s;
+      return z.object({ en, id: s });
+    }
     case "number": {
       let s = z.number({ message: `${f.label} must be a number` });
       if (f.min != null) s = s.min(f.min);
@@ -89,7 +97,8 @@ function fieldSchema(f: Field): z.ZodTypeAny {
       });
     case "ref": {
       const s = z.string().trim().max(120);
-      return f.required ? s.min(1, `Choose a ${f.label.toLowerCase()}`) : s;
+      // Optional pickers added to existing lists later are simply missing in older items.
+      return f.required ? s.min(1, `Choose a ${f.label.toLowerCase()}`) : s.optional().transform((v) => v ?? "");
     }
     case "group":
       return schemaFor(f.fields);
@@ -131,6 +140,7 @@ export function emptyValue(f: Field): unknown {
     case "ref":
       return "";
     case "i18n":
+    case "richtext":
       return { en: "", id: "" };
     case "number":
       return f.min ?? 0;
@@ -162,6 +172,9 @@ export function collectMediaIds(fields: Field[], value: unknown, out = new Set<n
     if (f.type === "media") {
       const id = (x as MediaRef | undefined)?.mediaId;
       if (id) out.add(id);
+    } else if (f.type === "richtext") {
+      const t = x as I18n | undefined;
+      for (const id of [...richMediaIds(t?.en), ...richMediaIds(t?.id)]) out.add(id);
     } else if (f.type === "group") collectMediaIds(f.fields, x, out);
     else if (f.type === "list" && Array.isArray(x)) x.forEach((item) => collectMediaIds(f.fields, item, out));
     else if (f.type === "blocks" && Array.isArray(x))
@@ -178,6 +191,7 @@ export const F = {
   text: (key: string, label: string, o: { required?: boolean; max?: number; placeholder?: string; help?: string } = {}): Field => ({ type: "text", key, label, ...o }),
   url: (key: string, label: string, help?: string): Field => ({ type: "url", key, label, help }),
   i18n: (key: string, label: string, o: { required?: boolean; multiline?: boolean; help?: string; max?: number } = {}): Field => ({ type: "i18n", key, label, ...o }),
+  richtext: (key: string, label: string, o: { required?: boolean; help?: string; max?: number } = {}): Field => ({ type: "richtext", key, label, ...o }),
   number: (key: string, label: string, o: { min?: number; max?: number; step?: number; help?: string } = {}): Field => ({ type: "number", key, label, ...o }),
   bool: (key: string, label: string, help?: string): Field => ({ type: "boolean", key, label, help }),
   select: (key: string, label: string, options: { value: string; label: string }[], help?: string): Field => ({ type: "select", key, label, options, help }),

@@ -273,6 +273,27 @@ span.wide-only, span.narrow-only { display: contents; }
 .prose-facts dt { font: 500 12px/1.3 var(--font-roboto); letter-spacing: 0.14em; text-transform: uppercase; color: var(--neutral-600); }
 .prose-facts dd { margin: 0; font: 500 18px/1.35 var(--font-roboto); }
 .prose-link { display: flex; padding-top: 8px; }
+/* Rich text from the CMS editor (FAQ pages, story "Rich text" blocks), styled like the story blocks. */
+.rich { display: flex; flex-direction: column; gap: 20px; font: 400 clamp(17px, 1.3vw, 19px)/1.7 var(--font-roboto); color: var(--text-default); }
+.rich > * { margin: 0; }
+.rich p { text-wrap: pretty; }
+.rich h2 { margin-top: 20px; font: 500 clamp(26px, 2.4vw, 32px)/1.2 var(--font-playfair); }
+.rich h3 { margin-top: 12px; font: 600 clamp(19px, 1.5vw, 21px)/1.35 var(--font-roboto); }
+.rich h4 { font: 600 17px/1.4 var(--font-roboto); }
+.rich ul, .rich ol { padding-left: 1.4em; display: flex; flex-direction: column; gap: 8px; }
+.rich li { padding-left: 0.2em; }
+.rich li::marker { color: var(--icon-primary); }
+.rich li[data-list="bullet"] { list-style-type: disc; }
+.rich li[data-list="ordered"] { list-style-type: decimal; }
+.rich a { color: var(--text-primary); text-decoration: underline; text-underline-offset: 3px; }
+.rich a:hover { text-decoration-thickness: 2px; }
+.rich strong { font-weight: 600; }
+.rich blockquote { padding: 4px 0 4px 20px; border-left: 3px solid var(--border-primary); font: italic 500 clamp(19px, 1.7vw, 22px)/1.5 var(--font-playfair); }
+.rich img { display: block; width: 100%; height: auto; margin: 8px 0; border-radius: var(--radius-lg); background: var(--neutral-800); }
+.rich iframe { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; border: 0; border-radius: var(--radius-lg); background: var(--neutral-800); }
+.rich hr { border: 0; border-top: 1px solid var(--border-default); }
+.rich pre, .rich code { font: 400 15px/1.5 ui-monospace, monospace; }
+.rich pre { padding: 16px; border-radius: var(--radius-md); background: var(--bg-secondary); overflow-x: auto; }
 .prose-source { display: flex; flex-direction: column; gap: 14px; padding: 24px; border: 1px solid var(--border-default); border-radius: var(--radius-lg); }
 .prose-source > span { font: 400 16px/1.5 var(--font-roboto); color: var(--neutral-700); }
 .prose-source a { display: flex; gap: 8px; align-items: center; font: 500 16px/1.3 var(--font-roboto); }

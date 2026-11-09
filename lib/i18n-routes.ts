@@ -18,7 +18,7 @@ export const OG_LOCALE: Record<Locale, string> = { en: "en_US", id: "id_ID" };
 /** The cookie that remembers the visitor's last language (for URLs without a prefix). */
 export const LANG_COOKIE = "lang";
 
-export type Section = "home" | "diveSites" | "facilities" | "courses" | "about" | "blog";
+export type Section = "home" | "diveSites" | "facilities" | "courses" | "about" | "blog" | "faq";
 
 /** First path segment per section and language ("" = the home page). */
 export const SEGMENTS: Record<Section, Record<Locale, string>> = {
@@ -28,10 +28,11 @@ export const SEGMENTS: Record<Section, Record<Locale, string>> = {
   courses: { en: "dive-courses", id: "kursus-selam" },
   about: { en: "about-us", id: "tentang-kami" },
   blog: { en: "blog", id: "blog" },
+  faq: { en: "faq", id: "tanya-jawab" },
 };
 
 /** Collections that have their own pages, and the section they live under. */
-export const COLLECTION_SECTION = { sites: "diveSites", courses: "courses", posts: "blog" } as const satisfies Record<string, Section>;
+export const COLLECTION_SECTION = { sites: "diveSites", courses: "courses", posts: "blog", faqs: "faq" } as const satisfies Record<string, Section>;
 export type PageCollection = keyof typeof COLLECTION_SECTION;
 
 /** /en, /id/titik-selam, … */

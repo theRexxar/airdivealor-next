@@ -9,6 +9,8 @@ import { COURSES_SECTIONS } from "./courses-sections";
 import type { Field } from "./fields";
 import { DIVE_SITES_SECTIONS } from "./dive-sites-sections";
 import { FACILITIES_SECTIONS } from "./facilities-sections";
+import { FAQ_FIELDS } from "./faq-fields";
+import { FAQ_SECTIONS } from "./faq-sections";
 import { HOME_SECTIONS } from "./home-sections";
 import type { SectionDef } from "./sections";
 import { CATEGORY_FIELDS, POST_FIELDS } from "./post-fields";
@@ -60,6 +62,7 @@ export const PAGES: PageDef[] = [
   { slug: "dive-courses", label: "Dive courses", href: "/dive-courses", icon: "graduation-cap", sections: COURSES_SECTIONS, anchors: { list: "courses" } },
   { slug: "about-us", label: "About us", href: "/about-us", icon: "info", sections: ABOUT_SECTIONS, anchors: { story: "story", name: "name", boats: "boats" } },
   { slug: "blog", label: "Blog", href: "/blog", icon: "newspaper", sections: BLOG_SECTIONS, anchors: { stories: "stories" } },
+  { slug: "faq", label: "FAQ", href: "/faq", icon: "circle-help", sections: FAQ_SECTIONS, anchors: { list: "questions" } },
 ];
 
 export const COLLECTIONS: CollectionDef[] = [
@@ -96,6 +99,17 @@ export const COLLECTIONS: CollectionDef[] = [
     listHref: "/blog",
     icon: "notebook-pen",
     sortField: "date",
+  },
+  {
+    key: "faqs",
+    label: "FAQ questions",
+    itemLabel: "question",
+    description: "Questions on the FAQ page, in groups, in this order. A question with a full answer gets its own page; the Home page FAQ can link to it.",
+    fields: FAQ_FIELDS,
+    titleField: "question",
+    itemHref: (slug) => `/en/faq/${slug}`,
+    listHref: "/faq",
+    icon: "message-circle-question",
   },
   {
     key: "categories",

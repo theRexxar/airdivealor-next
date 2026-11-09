@@ -6,6 +6,8 @@ import { Button, Icon } from "@/components/ui";
 import { emptyObject, type BlockKind, type Field, type I18n, type MediaRef } from "@/lib/cms/fields";
 import type { ResolvedMedia } from "@/lib/cms/home-types";
 import { MediaPicker, type MediaItem } from "./media";
+import { RichTextEditor } from "./RichTextEditor";
+import { richText } from "@/lib/rich-text";
 
 type Path = (string | number)[];
 type Errors = { path: Path; message: string }[];
@@ -133,6 +135,26 @@ function FieldInput({ field: f, value, onChange, path, ctx }: { field: Field; va
               {input("id")}
               {idErr && <span className="cms-field__error">{idErr}</span>}
             </div>
+          </div>
+          {error && <span className="cms-field__error">{error}</span>}
+        </div>
+      );
+    }
+    case "richtext": {
+      const v = (value as I18n) ?? { en: "", id: "" };
+      const enErr = errAt(ctx.errors, [...path, "en"]);
+      const idErr = errAt(ctx.errors, [...path, "id"]);
+      return (
+        <div className="cms-field" data-error={enErr || idErr || error ? "" : undefined}>
+          <Label field={f} id={`${id}-en`} />
+          <div className="cms-i18n cms-i18n--stacked">
+            {(["en", "id"] as const).map((lang) => (
+              <div key={lang} className="cms-i18n__lang">
+                <span className="cms-i18n__tag">{lang.toUpperCase()}</span>
+                <RichTextEditor id={`${id}-${lang}`} lang={lang} value={v[lang] ?? ""} readOnly={ctx.readOnly} onMediaPicked={ctx.onMediaPicked} onChange={(html) => onChange({ ...v, [lang]: html })} />
+                {(lang === "en" ? enErr : idErr) && <span className="cms-field__error">{lang === "en" ? enErr : idErr}</span>}
+              </div>
+            ))}
           </div>
           {error && <span className="cms-field__error">{error}</span>}
         </div>
@@ -300,7 +322,9 @@ function blockTitle(k: BlockKind | undefined, item: Record<string, unknown>) {
   const keys = k.titleKey ? [k.titleKey] : k.fields.map((f) => f.key);
   for (const key of keys) {
     const v = item?.[key];
-    const text = typeof v === "string" ? v : v && typeof v === "object" && "en" in v ? (v as I18n).en : "";
+    const raw = typeof v === "string" ? v : v && typeof v === "object" && "en" in v ? (v as I18n).en : "";
+    // Rich text: its words, not its HTML.
+    const text = k.fields.find((x) => x.key === key)?.type === "richtext" ? richText(raw) : raw;
     if (text) return text.length > 70 ? text.slice(0, 70) + "…" : text;
   }
   return "";
