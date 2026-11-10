@@ -16,6 +16,9 @@ import { CoursesView } from "../../[lang]/dive-courses/CoursesView";
 import { SiteGuideView } from "../../[lang]/dive-sites/[slug]/SiteGuideView";
 import { SitesView } from "../../[lang]/dive-sites/SitesView";
 import { FacilitiesView } from "../../[lang]/facilities-and-rates/FacilitiesView";
+import { FaqView } from "../../[lang]/faq/[slug]/FaqView";
+import { FaqIndexView } from "../../[lang]/faq/FaqIndexView";
+import type { PublishedFaq, PublishedFaqs } from "@/lib/cms/faq-types";
 
 /** Loads draft content from the CMS API and renders it with the website's own components, under a preview banner. */
 export function PreviewClient({ kind, collection, slug, anchors, back }: { kind: "page" | "item"; collection?: string; slug: string; anchors: Record<string, string>; back: string }) {
@@ -37,6 +40,8 @@ export function PreviewClient({ kind, collection, slug, anchors, back }: { kind:
   if (data && kind === "item" && collection === "sites") view = <SiteGuideView data={data as PublishedSite} />;
   else if (data && kind === "item" && collection === "posts") view = <PostView data={data as PublishedPost} />;
   else if (data && kind === "item" && collection === "courses") view = <CourseDetailView data={data as PublishedCourse} />;
+  else if (data && kind === "item" && collection === "faqs") view = <FaqView data={data as PublishedFaq} />;
+  else if (data && kind === "page" && slug === "faq") view = <FaqIndexView data={data as PublishedFaqs} />;
   else if (data && kind === "page" && slug === "home") view = <HomeView data={data as PublishedHome} />;
   else if (data && kind === "page" && slug === "dive-sites") view = <SitesView data={data as PublishedDiveSites} />;
   else if (data && kind === "page" && slug === "dive-courses") view = <CoursesView data={data as PublishedCourses} />;

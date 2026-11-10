@@ -1,9 +1,12 @@
 /** Content shapes for the Blog page, stories and categories. Mirrors blog-sections.ts and post-fields.ts. */
 import type { I18n, MediaRef } from "./fields";
 import type { ResolvedMedia } from "./home-types";
+import { richText } from "../rich-text";
 
 export type BodyBlock =
   | { type: "p" | "h"; text: I18n }
+  /** HTML from the rich text editor (cleaned on the server). */
+  | { type: "rich"; text: I18n }
   | { type: "img"; photo: MediaRef; caption: I18n }
   | { type: "gallery"; items: { photo: MediaRef; caption: I18n }[] }
   | { type: "list"; items: { text: I18n }[] }
@@ -80,6 +83,7 @@ export function readMinutes(p: PostContent): number {
   if (!p.body.length) n = count([p.excerpt.en]) + 1; // excerpt + the "read on the old blog" note
   for (const b of p.body) {
     if (b.type === "p" || b.type === "h" || b.type === "quote") n += count([b.text.en]);
+    else if (b.type === "rich") n += count([richText(b.text.en)]);
     else if (b.type === "img") n += count([b.caption.en]);
     else if (b.type === "link") n += count([b.label.en]);
     else if (b.type === "gallery") n += count(["", ...b.items.map((i) => i.caption.en)]);

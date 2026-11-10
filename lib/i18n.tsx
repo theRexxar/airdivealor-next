@@ -32,6 +32,9 @@ const EXTRA: Record<string, string> = {
     "Alor Kecil, Alor Barat Laut, Kabupaten Alor, Nusa Tenggara Timur, Indonesia",
   // Blog list
   "Read story": "Baca cerita",
+  // FAQ
+  "Read the full answer": "Baca jawaban lengkap",
+  "All questions": "Semua pertanyaan",
   "Plan your dive": "Rencanakan penyelaman",
   All: "Semua",
   "Blog · Latest story": "Blog · Cerita terbaru",

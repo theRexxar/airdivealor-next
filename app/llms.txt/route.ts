@@ -1,4 +1,4 @@
-import { getBlog, getCourses, getDiveSites, getFacilities } from "@/lib/cms/fetch";
+import { getBlog, getCourses, getDiveSites, getFacilities, getFaqs } from "@/lib/cms/fetch";
 import { itemPath, pagePath, type Section } from "@/lib/i18n-routes";
 import { BUSINESS } from "@/lib/seo/jsonld";
 import { ORG_DESCRIPTION } from "@/lib/seo/site";
@@ -19,7 +19,7 @@ export async function GET() {
   const site = env.SITE_URL.replace(/\/$/, "");
   const u = (p: string) => `${site}${p}`;
   const pg = (s: Section) => u(pagePath("en", s));
-  const [sites, courses, fac, blog] = await Promise.all([getDiveSites(), getCourses(), getFacilities(), getBlog()]);
+  const [sites, courses, fac, blog, faqs] = await Promise.all([getDiveSites(), getCourses(), getFacilities(), getBlog(), getFaqs()]);
 
   const lines: string[] = [
     "# Air Dive Alor",
@@ -48,6 +48,8 @@ export async function GET() {
   for (const c of courses.courses) lines.push(`- [${c.name.en}](${u(itemPath("en", "courses", c))}): ${c.level}, ${c.agency}, ${c.price}, ${[c.stay.en, c.dives.en].filter(Boolean).join(", ")}. ${one(c.text.en)}`);
   lines.push("", "## Dive sites", "");
   for (const s of sites.sites) lines.push(`- [${s.name}](${u(itemPath("en", "sites", s))}): ${[s.type.en, s.depth && `depth ${s.depth}`, s.level.en].filter(Boolean).join(", ")}. ${one(s.intro.en, 160)}`);
+  lines.push("", "## FAQ", "", `All questions: ${pg("faq")}`, "");
+  for (const f of faqs.faqs) lines.push(`- ${f.hasPage ? `[${f.question.en}](${u(itemPath("en", "faqs", f))})` : f.question.en}: ${one(f.answer.en, 240)}`);
   lines.push("", "## Blog", "");
   for (const p of blog.posts) lines.push(`- [${p.title.en}](${u(itemPath("en", "posts", p))}) (${p.date}): ${one(p.excerpt.en, 160)}`);
   lines.push("", "## Optional", "", `- [Sitemap](${u("/sitemap.xml")})`, `- [Instagram](https://www.instagram.com/air.dive/)`, `- [Tripadvisor reviews](${BUSINESS.sameAs[3]})`, "");

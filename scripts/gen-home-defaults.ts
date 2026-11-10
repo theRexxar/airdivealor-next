@@ -121,7 +121,9 @@ const defaults = {
   faq: {
     eyebrow: L("27 m · FAQ"),
     title: L("Before you ask."),
-    items: HOME.faqs.map((f) => ({ q: L(f.q), a: L(f.a) })),
+    // The first question links to its full answer on the FAQ page (lib/cms/faq-defaults.ts).
+    moreLabel: { en: "Read the full answer", id: "Baca jawaban lengkap" },
+    items: HOME.faqs.map((f, i) => ({ q: L(f.q), a: L(f.a), page: i === 0 ? "how-to-get-to-alor" : "", moreLabel: { en: "", id: "" } })),
     help: { title: L("Something else?"), text: L("Message the dive shop. We usually reply within the hour, 7am to 9pm WITA."), button: L("Chat on WhatsApp") },
   },
   book: {

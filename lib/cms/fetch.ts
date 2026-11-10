@@ -12,6 +12,8 @@ import type { PublishedFacilities } from "./facilities-types";
 import { HOME_DEFAULTS } from "./home-defaults";
 import type { PublishedHome } from "./home-types";
 import { collectionTag, pageTag } from "./tags";
+import { FAQ_PAGE_DEFAULTS, FAQS_DEFAULTS } from "./faq-defaults";
+import { hasFaqPage, toFaqCard, type PublishedFaq, type PublishedFaqs } from "./faq-types";
 
 /** Where the website reaches the CMS API. Defaults to this same app. */
 async function apiBase() {
@@ -40,6 +42,7 @@ export const FALLBACK_HOME: PublishedHome = {
   order: ["awards", "prices", "why", "sites", "stay", "reviews", "faq", "book"],
   media: {},
   sites: Object.fromEntries(SITES_DEFAULTS.map((s) => [s.slug, s])),
+  faqPages: Object.fromEntries(FAQS_DEFAULTS.filter(hasFaqPage).map((f) => [f.slug, { slug: f.slug, slugId: f.slugId || undefined }])),
   publishedAt: null,
 };
 
@@ -69,7 +72,7 @@ export async function getFacilities(): Promise<PublishedFacilities> {
 
 export async function getHome(): Promise<PublishedHome> {
   try {
-    return (await cmsGet<PublishedHome>("/api/public/pages/home", [pageTag("home"), collectionTag("sites")])) ?? FALLBACK_HOME;
+    return (await cmsGet<PublishedHome>("/api/public/pages/home", [pageTag("home"), collectionTag("sites"), collectionTag("faqs")])) ?? FALLBACK_HOME;
   } catch (e) {
     warn("home", e);
     return FALLBACK_HOME;
@@ -185,5 +188,32 @@ export async function getPost(slug: string): Promise<PublishedPost | null> {
       texts: BLOG_DEFAULTS.post,
       media: {},
     };
+  }
+}
+
+const FAQ_TAGS = [pageTag("faq"), collectionTag("faqs")];
+
+export const FALLBACK_FAQS: PublishedFaqs = { content: FAQ_PAGE_DEFAULTS, order: ["hero", "list", "cta"], faqs: FAQS_DEFAULTS.map(toFaqCard), media: {}, publishedAt: null };
+
+export async function getFaqs(): Promise<PublishedFaqs> {
+  try {
+    return (await cmsGet<PublishedFaqs>("/api/public/pages/faq", FAQ_TAGS)) ?? FALLBACK_FAQS;
+  } catch (e) {
+    warn("faq", e);
+    return FALLBACK_FAQS;
+  }
+}
+
+/** One question with its full answer, or null when it isn't published or has no full answer (the page then shows 404). */
+export async function getFaq(slug: string): Promise<PublishedFaq | null> {
+  try {
+    return await cmsGet<PublishedFaq>(`/api/public/faqs/${encodeURIComponent(slug)}`, FAQ_TAGS);
+  } catch (e) {
+    warn(`faq ${slug}`, e);
+    const faq = FAQS_DEFAULTS.find((f) => f.slug === slug || (!!f.slugId && f.slugId === slug));
+    if (!faq || !hasFaqPage(faq)) return null;
+    const others = FAQS_DEFAULTS.filter((x) => x !== faq);
+    const more = others.filter((x) => x.category === faq.category).concat(others.filter((x) => x.category !== faq.category)).slice(0, 4).map(toFaqCard);
+    return { faq, more, texts: FAQ_PAGE_DEFAULTS.detail, media: {}, publishedAt: null };
   }
 }

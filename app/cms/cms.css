@@ -116,6 +116,21 @@
 .cms-i18n__tag { font: 600 11px/1 var(--font-inter); letter-spacing: 0.08em; color: var(--text-secondary); }
 .cms-textarea { box-sizing: border-box; width: 100%; min-height: 84px; padding: 9px 12px; border: 1px solid var(--border-secondary); border-radius: var(--radius-md); font: 400 14px/20px var(--font-inter); color: var(--text-default); background: var(--bg-default); resize: vertical; }
 .cms-textarea:focus { outline: 0; border-color: var(--border-primary); box-shadow: 0 0 0 1px var(--border-primary); }
+.cms-i18n--stacked { grid-template-columns: minmax(0, 1fr); gap: 16px; }
+/* Rich text (Quill) */
+.cms-rich .ql-toolbar.ql-snow { border: 1px solid var(--border-secondary); border-radius: var(--radius-md) var(--radius-md) 0 0; background: var(--bg-secondary); font-family: var(--font-inter); }
+.cms-rich .ql-container.ql-snow { border: 1px solid var(--border-secondary); border-top: 0; border-radius: 0 0 var(--radius-md) var(--radius-md); background: var(--bg-default); font: 400 15px/1.6 var(--font-roboto); color: var(--text-default); }
+.cms-rich .ql-editor { min-height: 200px; max-height: 70vh; overflow-y: auto; }
+.cms-rich .ql-editor h2 { font: 600 22px/1.3 var(--font-roboto); margin: 0.8em 0 0.3em; }
+.cms-rich .ql-editor h3 { font: 600 18px/1.35 var(--font-roboto); margin: 0.8em 0 0.3em; }
+.cms-rich .ql-editor img { max-width: 100%; height: auto; border-radius: var(--radius-md); }
+.cms-rich .ql-editor iframe { width: 100%; aspect-ratio: 16 / 9; height: auto; }
+.cms-rich .ql-editor blockquote { border-left: 3px solid var(--border-primary); padding-left: 12px; color: var(--text-secondary); }
+.cms-rich .ql-editor.ql-blank::before { color: var(--text-secondary); font-style: normal; }
+.cms-rich:focus-within .ql-container.ql-snow, .cms-rich:focus-within .ql-toolbar.ql-snow { border-color: var(--border-primary); }
+.cms-rich[data-readonly] .ql-toolbar { display: none; }
+.cms-rich[data-readonly] .ql-container.ql-snow { border-top: 1px solid var(--border-secondary); border-radius: var(--radius-md); background: var(--bg-secondary); }
+.cms-field[data-error] .cms-rich .ql-container.ql-snow { border-color: var(--border-error); }
 .cms-group { display: flex; flex-direction: column; gap: 16px; padding: 16px; border: 1px solid var(--border-default); border-radius: var(--radius-lg); background: var(--bg-secondary); }
 .cms-group__title { font: 600 14px/1.3 var(--font-roboto); }
 .cms-list { display: flex; flex-direction: column; gap: 10px; }

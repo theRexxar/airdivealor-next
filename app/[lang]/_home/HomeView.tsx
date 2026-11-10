@@ -73,7 +73,7 @@ export function HomeView({ data }: { data: PublishedHome }) {
             case "reviews":
               return <Reviews key={k} c={c} h={h} />;
             case "faq":
-              return <Faq key={k} c={c} h={h} />;
+              return <Faq key={k} c={c} h={h} pages={data.faqPages ?? {}} />;
             case "book":
               return <Book key={k} c={c} h={h} b={booking} />;
             default:
@@ -437,8 +437,9 @@ function Reviews({ c, h }: { c: HomeContent; h: Helpers }) {
   );
 }
 
-function Faq({ c, h }: { c: HomeContent; h: Helpers }) {
-  const { L } = h;
+function Faq({ c, h, pages }: { c: HomeContent; h: Helpers; pages: NonNullable<PublishedHome["faqPages"]> }) {
+  const { L, t } = h;
+  const itemHref = useItemHref();
   return (
     <section id="b-faq" className="section">
       <div className="section-intro home-faq__intro">
@@ -450,6 +451,13 @@ function Faq({ c, h }: { c: HomeContent; h: Helpers }) {
           <div key={i} className="home-faq__item">
             <h3>{L(f.q)}</h3>
             <p>{L(f.a)}</p>
+            {f.page && pages[f.page] && (
+              <div className="home-faq__more">
+                <ButtonLink href={itemHref("faqs", pages[f.page])} variant="text" size="large" icon="arrow-right" iconPosition="suffix">
+                  {L(f.moreLabel) || L(c.faq.moreLabel) || t("Read the full answer")}
+                </ButtonLink>
+              </div>
+            )}
           </div>
         ))}
         {L(c.faq.help.title) && (

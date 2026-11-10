@@ -8,6 +8,11 @@ const nextConfig: NextConfig = {
    * page, so waiting for it costs almost nothing.
    */
   htmlLimitedBots: /.*/,
+
+  /** Pages of the old airdivealor.com that now live elsewhere, so old links and search results keep working. */
+  async redirects() {
+    return [{ source: "/how-to-get-to-alor", destination: "/en/faq/how-to-get-to-alor", permanent: true }];
+  },
 };
 
 export default nextConfig;

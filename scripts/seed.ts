@@ -10,6 +10,7 @@ import { extname, join } from "node:path";
 import { COLLECTION_DEFAULTS, PAGE_DEFAULTS } from "../lib/cms/defaults";
 import { emptyValue } from "../lib/cms/fields";
 import { COLLECTIONS, PAGES } from "../lib/cms/registry";
+import { RICH_STORIES } from "../lib/cms/blog-rich-stories";
 import { DEFAULT_ROLES, PERMISSION_KEYS } from "../lib/cms/permissions";
 import { db, schema } from "../lib/server/db";
 import { env } from "../lib/server/env";
@@ -73,12 +74,35 @@ async function importLocal(url: string, cache: Map<string, number>): Promise<num
   return id;
 }
 
-/** Walk section content and swap local image URLs for media library ids. */
-const importMedia = (value: unknown, cache: Map<string, number>) =>
-  mapMediaRefs(value, async (ref) => {
-    const id = ref.mediaId ? null : await importLocal(ref.url, cache);
-    return id ? { mediaId: id, url: "" } : ref;
-  });
+/** Pictures in rich text (<img src="/latest/x.webp">) get their media library id, so the site serves resized versions. */
+async function importRichImages(html: string, cache: Map<string, number>): Promise<string> {
+  let out = html;
+  for (const tag of new Set(html.match(/<img\b[^>]*>/g) ?? [])) {
+    if (/data-media-id=/.test(tag)) continue;
+    const src = tag.match(/\ssrc="(\/[^"]+)"/)?.[1];
+    const id = src ? await importLocal(src, cache) : null;
+    if (id) out = out.split(tag).join(tag.replace(/^<img\b/, `<img data-media-id="${id}"`));
+  }
+  return out;
+}
+
+/** Every string in a value, with rich text pictures imported. */
+async function importRich(value: unknown, cache: Map<string, number>): Promise<unknown> {
+  if (typeof value === "string") return value.includes("<img") ? importRichImages(value, cache) : value;
+  if (Array.isArray(value)) return Promise.all(value.map((v) => importRich(v, cache)));
+  if (value && typeof value === "object") return Object.fromEntries(await Promise.all(Object.entries(value).map(async ([k, v]) => [k, await importRich(v, cache)])));
+  return value;
+}
+
+/** Walk section content and swap local image URLs for media library ids (photo fields and rich text pictures). */
+const importMedia = async (value: unknown, cache: Map<string, number>) =>
+  importRich(
+    await mapMediaRefs(value, async (ref) => {
+      const id = ref.mediaId ? null : await importLocal(ref.url, cache);
+      return id ? { mediaId: id, url: "" } : ref;
+    }),
+    cache,
+  );
 
 async function seedPages(cache: Map<string, number>) {
   for (const def of PAGES) {
@@ -194,6 +218,47 @@ async function upgradeSeoTexts() {
   }
 }
 
+/**
+ * Built-in stories added after a database was seeded (the rich text ones in lib/cms/blog-rich-stories.ts):
+ * added as drafts, so an editor can read them and publish them from the CMS. Never overwrites a story.
+ */
+async function addNewStories(cache: Map<string, number>) {
+  const rows = await db.select().from(schema.collectionItems).where(eq(schema.collectionItems.collection, "posts"));
+  if (!rows.length) return; // an empty collection is filled (and published) by seedCollections
+  for (const story of RICH_STORIES) {
+    if (rows.some((r) => r.slug === story.slug)) continue;
+    const content = await importMedia(story, cache);
+    const sort = Math.max(0, ...rows.map((r) => r.sort)) + 10;
+    await db.insert(schema.collectionItems).values({ collection: "posts", slug: story.slug, sort, draft: content, published: null, draftUpdatedAt: new Date() });
+    console.info(`story "${story.slug}": added as a draft (publish it in the CMS)`);
+  }
+}
+
+/** Home FAQ questions saved before they could link to a full answer: link the first one to its FAQ page. */
+async function linkHomeFaq() {
+  const page = await db.query.pages.findFirst({ where: eq(schema.pages.slug, "home") });
+  if (!page) return;
+  const row = await db.query.pageSections.findFirst({ where: and(eq(schema.pageSections.pageId, page.id), eq(schema.pageSections.key, "faq")) });
+  if (!row) return;
+  const link = (v: unknown) => {
+    const faq = v as { moreLabel?: unknown; items?: { q?: { en?: string }; page?: string }[] } | null;
+    if (!faq?.items) return v;
+    const needsItems = faq.items.some((x) => x.page === undefined);
+    if (!needsItems && faq.moreLabel) return v;
+    return {
+      ...faq,
+      moreLabel: faq.moreLabel ?? { en: "Read the full answer", id: "Baca jawaban lengkap" },
+      items: needsItems ? faq.items.map((x) => (x.page !== undefined ? x : { ...x, page: x.q?.en?.trim() === "How do I get to Alor?" ? "how-to-get-to-alor" : "" })) : faq.items,
+    };
+  };
+  const draft = link(row.draft);
+  const published = link(row.published);
+  if (draft !== row.draft || published !== row.published) {
+    await db.update(schema.pageSections).set({ draft, published }).where(eq(schema.pageSections.id, row.id));
+    console.info("page home: FAQ questions can now link to a full answer (link text: “Read the full answer”)");
+  }
+}
+
 async function main() {
   await ensureBucket();
   await seedRoles();
@@ -203,6 +268,8 @@ async function main() {
   await seedCollections(cache);
   await backfillFields();
   await upgradeSeoTexts();
+  await addNewStories(cache);
+  await linkHomeFaq();
   await mediaQueue().close();
   console.info("seed done");
   process.exit(0);

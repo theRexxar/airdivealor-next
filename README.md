@@ -20,6 +20,7 @@ Every page has an English and an Indonesian address. English is the default.
 | `/en/dive-courses`, `/en/dive-courses/[id]` | `/id/kursus-selam`, `/id/kursus-selam/[id]` | `DiveCourses.dc.html`: 12 courses and a detail page per course |
 | `/en/about-us` | `/id/tentang-kami` | `AboutUs.dc.html` |
 | `/en/blog`, `/en/blog/[slug]` | `/id/blog`, `/id/blog/[slug]` | `Blog.dc.html`, `BlogPost.dc.html` |
+| `/en/faq`, `/en/faq/[slug]` | `/id/tanya-jawab`, `/id/tanya-jawab/[slug]` | (new) all questions in groups, and a page for each question with a full answer |
 
 The prototypes' overlays (site guide, course detail, story picker) are real pages here, so each one has its own link.
 
@@ -121,12 +122,27 @@ In production, run `npm run build && npm start` for the app and `npm run worker`
 
 **Blog stories and categories (collections):** stories live under *Content › Blog stories* (`/cms/collections/posts`) and are listed newest first by their date, not by hand.
 - **Fields:** title, excerpt, date, category (picked from *Blog categories*), author and initials, cover photo, and an optional link to the old blog.
-- **Body:** built from blocks: paragraph, heading, image, gallery, checklist, quote, facts, button link. Add a block, then reorder, duplicate or remove blocks.
+- **Body:** built from blocks: rich text, paragraph, heading, image, gallery, checklist, quote, facts, button link. Add a block, then reorder, duplicate or remove blocks. A **Rich text** block is a free-form editor (see *Rich text* below) and can hold a whole story.
 - **No body:** a story without a body shows its excerpt and a link to the old blog.
 - **Categories:** become the blog's filter buttons, in their list order.
 - **Deleting:** refused while something still uses the item: a category used by stories, or the story picked as featured.
 
-**Website connection:** `app/page.tsx`, `app/dive-sites/page.tsx`, `app/dive-sites/[slug]/page.tsx`, `app/facilities-and-rates/page.tsx`, `app/dive-courses/page.tsx`, `app/dive-courses/[id]/page.tsx`, `app/about-us/page.tsx`, `app/blog/page.tsx` and `app/blog/[slug]/page.tsx` fetch the public API. Responses are cached for 5 minutes and refreshed the moment someone publishes. If the CMS can't be reached, the pages fall back to the built-in content in `lib/cms/home-defaults.ts`, `lib/cms/dive-sites-defaults.ts`, `lib/cms/facilities-defaults.ts`, `lib/cms/courses-defaults.ts`, `lib/cms/about-defaults.ts` and `lib/cms/blog-defaults.ts`. Set `CMS_API_URL` if the API runs somewhere else.
+**FAQ (a page and a collection):** the questions live under *Content › FAQ questions* (`/cms/collections/faqs`), the page texts under *Pages › FAQ*.
+- **Fields:** web addresses (English and Indonesian), question, short answer, group (Getting here, Diving, Your stay, Booking and payment), cover photo, and an optional **Full answer** in rich text.
+- **Pages:** `/en/faq` lists every question in its group, with its short answer. A question with a full answer gets its own page (`/en/faq/how-to-get-to-alor`, `/id/tanya-jawab/cara-ke-alor`) and a “Read the full answer” link; a question without one has no page (404) and stays out of the sitemap.
+- **Home page:** each question in the Home FAQ section can pick a question from *FAQ questions* under **Full answer**; the Home page then shows a link to it under the answer, styled like the hero's “See prices” button (text button with an arrow). The link text is set once for the section (**Link to the full answer: text**, default “Read the full answer” / “Baca jawaban lengkap”), and a question can use its own (**Link text**). Only questions with a full answer can be linked; the first one links to “How do I get to Alor?”.
+- **Old link:** `/how-to-get-to-alor` from the old website redirects to `/en/faq/how-to-get-to-alor` (`next.config.ts`).
+- **SEO:** each answer page has its own title, description, canonical URL, hreflang and `FAQPage` JSON-LD with the full answer as text; the FAQ page lists every question in one `FAQPage`. Without a cover photo, the first picture of the answer is used when the page is shared.
+
+**Rich text (the editor):** fields of type `richtext` (`F.richtext(...)` in `lib/cms/fields.ts`) get a Quill 2 editor per language (`components/cms/RichTextEditor.tsx`).
+- **Why Quill:** BSD-licensed and free for any use, small, and it writes clean HTML. CKEditor 5 needs a commercial licence (or a GPL licence for the whole project) for a closed website like this one, and is much heavier; its extra features (tables, collaboration) aren't needed here.
+- **Tools:** headings (2 levels), bold, italic, underline, strikethrough, numbered and bulleted lists, quote, link, picture, video (YouTube or Vimeo), clear formatting.
+- **Pictures** come from the media library (the editor's picture button opens it), so the website serves them resized (`srcset`) with their description as alt text. Pasted pictures (base64) are refused.
+- **Links** to site pages can be written without a language (`/dive-courses`); the website puts them into the page's language. Links to other sites open in a new tab.
+- **Stored as** HTML per language (`{ en, id }`). The server cleans it whenever content is read for the website or a preview (`lib/server/rich-sanitize.ts`, sanitize-html): only the tags the editor makes stay; scripts, styles, event handlers, `javascript:` links and frames from other sites are removed. `components/RichText.tsx` renders it with the `.rich` styles in `app/globals.css`.
+- **Built-in content** written this way: the full answer to “How do I get to Alor?” (`lib/cms/faq-defaults.ts`) and the story “What to pack for diving in Alor” (`lib/cms/blog-rich-stories.ts`), both in English and Indonesian.
+
+**Website connection:** `app/page.tsx`, `app/dive-sites/page.tsx`, `app/dive-sites/[slug]/page.tsx`, `app/facilities-and-rates/page.tsx`, `app/dive-courses/page.tsx`, `app/dive-courses/[id]/page.tsx`, `app/about-us/page.tsx`, `app/blog/page.tsx`, `app/blog/[slug]/page.tsx`, `app/faq/page.tsx` and `app/faq/[slug]/page.tsx` (all under `app/[lang]/`) fetch the public API. Responses are cached for 5 minutes and refreshed the moment someone publishes. If the CMS can't be reached, the pages fall back to the built-in content in `lib/cms/home-defaults.ts`, `lib/cms/dive-sites-defaults.ts`, `lib/cms/facilities-defaults.ts`, `lib/cms/courses-defaults.ts`, `lib/cms/about-defaults.ts`, `lib/cms/blog-defaults.ts` and `lib/cms/faq-defaults.ts`. Set `CMS_API_URL` if the API runs somewhere else.
 
 **Uploads (asynchronous):**
 1. The browser registers the file and gets a presigned URL.

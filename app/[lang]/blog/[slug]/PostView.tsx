@@ -4,6 +4,7 @@ import { useItemHref } from "@/lib/i18n";
 import Link from "@/components/LocalLink";
 import { useEffect, useRef, useState } from "react";
 import { PostCard } from "@/components/PostCard";
+import { RichText } from "@/components/RichText";
 import { SiteFooter } from "@/components/SiteFooter";
 import { SiteHeader } from "@/components/SiteHeader";
 import { Button, ButtonLink, Dot, Icon } from "@/components/ui";
@@ -85,7 +86,7 @@ export function PostView({ data }: { data: PublishedPost }) {
         <section className="post-body">
           <div className="post-body__inner">
             {p.body.length > 0 ? (
-              p.body.map((b, k) => <Block key={k} block={b} h={h} fallbackAlt={title} />)
+              p.body.map((b, k) => <Block key={k} block={b} h={h} media={data.media} fallbackAlt={title} />)
             ) : (
               <>
                 <p className="prose-p">{L(p.excerpt)}</p>
@@ -171,9 +172,11 @@ function AdjacentLink({ post, dir, h }: { post: PostCardData; dir: "newer" | "ol
   );
 }
 
-function Block({ block: b, h, fallbackAlt }: { block: BodyBlock; h: ContentHelpers; fallbackAlt: string }) {
+function Block({ block: b, h, media, fallbackAlt }: { block: BodyBlock; h: ContentHelpers; media: PublishedPost["media"]; fallbackAlt: string }) {
   const { L, img } = h;
   switch (b.type) {
+    case "rich":
+      return <RichText html={L(b.text)} media={media} />;
     case "p":
       return <p className="prose-p">{L(b.text)}</p>;
     case "h":
