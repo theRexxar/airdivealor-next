@@ -108,6 +108,50 @@
 .price-table__cell { padding: 16px 32px; border-right: 1px solid var(--border-default); display: flex; align-items: center; }
 .price-table__num { font: 500 16px/1 var(--font-inter); }
 
+/*
+ * Phones and tablets: a card per package instead of the comparison table, until the table fits without
+ * scrolling sideways. The table needs 180px + 233px per package plus the page margins, so the switch point
+ * follows the number of packages in the CMS (data-cols on the section).
+ */
+.price-cards { display: none; flex-direction: column; gap: 16px; }
+@media (max-width: 759px) {
+  .home-cur { align-items: flex-start; }
+  .home-prices .price-table { display: none; }
+  .home-prices .price-cards { display: flex; }
+}
+@media (max-width: 1049px) {
+  .home-prices[data-cols="3"] .price-table { display: none; }
+  .home-prices[data-cols="3"] .price-cards { display: flex; }
+}
+@media (max-width: 1329px) {
+  .home-prices[data-cols="4"] .price-table { display: none; }
+  .home-prices[data-cols="4"] .price-cards { display: flex; }
+}
+@media (max-width: 1579px) {
+  .home-prices[data-cols="5"] .price-table { display: none; }
+  .home-prices[data-cols="5"] .price-cards { display: flex; }
+}
+@media (max-width: 1809px) {
+  .home-prices[data-cols="6"] .price-table { display: none; }
+  .home-prices[data-cols="6"] .price-cards { display: flex; }
+}
+.price-cards__note { margin: 0; display: flex; flex-direction: column; gap: 6px; font: 400 14px/1.5 var(--font-roboto); color: var(--neutral-600); }
+.price-cards__list { margin: 0; padding: 0; list-style: none; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap: 16px; align-items: start; }
+.price-card {
+  display: flex; flex-direction: column; gap: 16px; padding: 24px 20px;
+  border: 1px solid var(--border-secondary); border-radius: var(--radius-lg); background: var(--bg-default); transition: background-color .12s, border-color .12s;
+}
+.price-card[data-on] { background: var(--bg-primary-subdued); border-color: var(--border-primary); box-shadow: 0 0 0 1px var(--border-primary); }
+.price-card__top { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 12px; }
+.price-card__top .tw-tag { white-space: nowrap; }
+.price-card .price-table__name { font-size: 26px; }
+.price-card .price-table__main { font-size: 28px; }
+.price-card__list { margin: 0; display: flex; flex-direction: column; border-top: 1px solid var(--border-default); }
+.price-card__row { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 12px 0; border-bottom: 1px solid var(--border-default); font: 400 15px/1.4 var(--font-roboto); }
+.price-card__row dt { color: var(--neutral-700); }
+.price-card__row dd { margin: 0; display: flex; align-items: center; flex: none; text-align: right; }
+
+
 /* Why Alor */
 .home-why {
   position: relative; overflow: hidden; padding: clamp(64px, 8.3vw, 120px) var(--gutter); background: var(--bg-secondary);

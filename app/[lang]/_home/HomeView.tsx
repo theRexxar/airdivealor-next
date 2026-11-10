@@ -162,7 +162,7 @@ function Prices({ c, h, b, awardsAbove }: { c: HomeContent; h: Helpers; b: Booki
   const p = c.prices;
   const { main, alt } = useMoney(c, b.cur);
   return (
-    <section id="b-prices" className="home-prices" style={awardsAbove ? undefined : { paddingTop: "clamp(64px, 8.3vw, 120px)" }}>
+    <section id="b-prices" className="home-prices" data-cols={p.packages.length} style={awardsAbove ? undefined : { paddingTop: "clamp(64px, 8.3vw, 120px)" }}>
       <div className="home-head">
         <div className="home-head__text">
           {L(p.eyebrow) && <Eyebrow>{L(p.eyebrow)}</Eyebrow>}
@@ -211,33 +211,78 @@ function Prices({ c, h, b, awardsAbove }: { c: HomeContent; h: Helpers; b: Booki
           {p.rows.map((row, r) => (
             <div key={r} className="price-table__row price-table__row--line" style={{ gridTemplateColumns: `minmax(180px, 300px) repeat(${p.packages.length}, minmax(0, 1fr))` }}>
               <div className="price-table__label">{L(row.label)}</div>
-              {p.packages.map((x) => {
-                const v = x.cells[r]?.value;
-                const raw = (v?.en ?? "").trim().toLowerCase();
-                return (
-                  <div key={x.id} className="price-table__cell" data-on={x.id === b.pkg || undefined}>
-                    {raw === "yes" ? (
-                      <>
-                        <Icon name="check" size={20} style={{ color: "var(--icon-primary)" }} />
-                        <span className="visually-hidden">{h.t("Included")}</span>
-                      </>
-                    ) : raw === "no" || raw === "" ? (
-                      <>
-                        <Icon name="minus" size={20} style={{ color: "var(--icon-tertiary)" }} />
-                        <span className="visually-hidden">{h.t("Not included")}</span>
-                      </>
-                    ) : (
-                      <span className="price-table__num">{L(v)}</span>
-                    )}
-                  </div>
-                );
-              })}
+              {p.packages.map((x) => (
+                <div key={x.id} className="price-table__cell" data-on={x.id === b.pkg || undefined}>
+                  <PriceCell v={x.cells[r]?.value} h={h} />
+                </div>
+              ))}
             </div>
           ))}
         </div>
       </div>
+
+      {/* Phones and tablets: one card per package instead of the side-by-side table. */}
+      <div className="price-cards">
+        {(L(p.tableLabel) || L(p.depositNote)) && (
+          <p className="price-cards__note">
+            {L(p.tableLabel) && <span className="label-caps">{L(p.tableLabel)}</span>}
+            {L(p.depositNote) && <span>{L(p.depositNote)}</span>}
+          </p>
+        )}
+        <ul className="price-cards__list">
+          {p.packages.map((x) => (
+            <li key={x.id} className="price-card" data-on={x.id === b.pkg || undefined}>
+              <div className="price-card__top">
+                <span className="label-caps price-table__meta">{L(x.meta)}</span>
+                {x.highlight && L(x.tag) && <Tag tone="primary">{L(x.tag)}</Tag>}
+              </div>
+              <h3 className="price-table__name">{L(x.name)}</h3>
+              <div className="price-table__price">
+                <div className="price-table__main">{main(x.priceIdr)}</div>
+                <div className="price-table__alt">
+                  {alt(x.priceIdr)}
+                  {L(x.unit) && ` · ${L(x.unit)}`}
+                </div>
+              </div>
+              <dl className="price-card__list">
+                {p.rows.map((row, r) => (
+                  <div key={r} className="price-card__row">
+                    <dt>{L(row.label)}</dt>
+                    <dd>
+                      <PriceCell v={x.cells[r]?.value} h={h} />
+                    </dd>
+                  </div>
+                ))}
+              </dl>
+              <Button variant={x.id === b.pkg ? "primary" : "secondary"} size="large" style={{ width: "100%" }} onClick={() => b.choose(x.id)}>
+                {L(p.chooseLabel)}
+              </Button>
+            </li>
+          ))}
+        </ul>
+      </div>
     </section>
   );
+}
+
+/** One comparison value: a check for "yes", a dash for "no" or empty, otherwise the text (e.g. "6 dives"). */
+function PriceCell({ v, h }: { v: I18n | undefined; h: Helpers }) {
+  const raw = (v?.en ?? "").trim().toLowerCase();
+  if (raw === "yes")
+    return (
+      <>
+        <Icon name="check" size={20} style={{ color: "var(--icon-primary)" }} />
+        <span className="visually-hidden">{h.t("Included")}</span>
+      </>
+    );
+  if (raw === "no" || raw === "")
+    return (
+      <>
+        <Icon name="minus" size={20} style={{ color: "var(--icon-tertiary)" }} />
+        <span className="visually-hidden">{h.t("Not included")}</span>
+      </>
+    );
+  return <span className="price-table__num">{h.L(v)}</span>;
 }
 
 function Why({ c, h }: { c: HomeContent; h: Helpers }) {
