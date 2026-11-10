@@ -59,6 +59,8 @@ S3_PUBLIC_URL=https://media.airdivealor.com/airdivealor-media
 BREVO_API_KEY=<from Brevo>
 MAIL_FROM_EMAIL=no-reply@airdivealor.com
 MAIL_FROM_NAME=Air Dive Alor
+# Booking enquiries from the Home page form (the default is contact@airdivealor.com).
+ENQUIRY_EMAIL=contact@airdivealor.com
 
 SEED_ADMIN_EMAIL=admin@airdivealor.com
 SEED_ADMIN_PASSWORD=<long random value; change it after the first sign-in>
@@ -133,7 +135,7 @@ The website prints the same report with `[web]`, plus the site URL and an **emai
 
 The symbols:
 - `✓`: OK.
-- `!`: a warning; the service still runs. Example: `! email BREVO_API_KEY is not set`, which means invitations and password emails are **not** sent.
+- `!`: a warning; the service still runs. Example: `! email BREVO_API_KEY is not set`, which means invitations, password emails and booking enquiries are **not** sent (the booking form then tells visitors to use WhatsApp).
 - `✗`: a problem. The health check (`/api/health` for web, `/health` for worker) then answers 503, so Railway doesn't switch to the broken deploy.
 
 The worker's `/health` also shows its queue and how many files it has processed since it started.

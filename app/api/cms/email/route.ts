@@ -10,6 +10,7 @@ export const GET = handle(async () => {
     configured: !!env.BREVO_API_KEY,
     from: { email: env.MAIL_FROM_EMAIL, name: env.MAIL_FROM_NAME },
     siteUrl: env.SITE_URL,
+    enquiryTo: env.ENQUIRY_EMAIL,
     me: { email: me.email },
     templates: Object.entries(samples).map(([key, t]) => ({ key, label: t.label, ...t.email })),
   });
