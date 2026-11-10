@@ -20,7 +20,7 @@ export function LangSwitch() {
       title={other === "id" ? "Bahasa Indonesia" : "English"}
     >
       <Icon name="globe" size={18} />
-      {lang === "EN" ? "EN / ID" : "ID / EN"}
+      <span className="lang-toggle__label">{lang === "EN" ? "EN / ID" : "ID / EN"}</span>
     </Link>
   );
 }

@@ -55,7 +55,7 @@ export function SiteHeader({ current }: { current?: Current }) {
         <Link href={ROUTES.diveSites} {...cur("diveSites")}>{t("Dive sites")}</Link>
         <details ref={pricing} className="site-nav__menu">
           <summary {...(current === "facilities" || current === "courses" ? { "data-current": "" } : {})}>
-            {t("Pricing")}
+            <span className="site-nav__label">{t("Pricing")}</span>
             <Icon name="chevron-down" size={14} />
           </summary>
           <div className="site-nav__dropdown">
