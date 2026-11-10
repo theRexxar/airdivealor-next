@@ -43,7 +43,7 @@ The prototypes' overlays (site guide, course detail, story picker) are real page
 
 ## Still placeholder
 
-These come from the prototypes and need confirming: home prices and package details, "4.9 / 180+ reviews", "2,000+ divers", the booking form (it shows "Enquiry sent" but sends nothing), and the dive-site notes marked as drafts.
+These come from the prototypes and need confirming: home prices and package details, "4.9 / 180+ reviews", "2,000+ divers", and the dive-site notes marked as drafts.
 
 ---
 
@@ -158,7 +158,13 @@ Limits are 25 MB per image and 300 MB per video. Browsers upload directly, so th
 - **Users** are invited by email and set their own password from the invitation link (valid 7 days).
 - **Forgot password** emails a one-time link valid for 1 hour, sent through Brevo. Asking again cancels the earlier link, and the form answers the same way whether or not the address has an account.
 - **Password changed:** after a reset, or a change in Account settings, the owner gets an email, so they notice if it wasn't them. A reset also signs out every other device.
-- **Emails** (invitation, password reset, password changed) are in English and Indonesian, with an HTML and a plain-text version (`lib/server/emails.ts`). **CMS › Email** (Super admin, or anyone with "Invite, edit and disable users") shows whether Brevo is connected, previews every template, and sends a test to yourself. Without `BREVO_API_KEY`, emails are only printed to the server log, and the CMS says no email was sent (it never reports an invitation as sent when it wasn't). Each email Brevo accepts is logged with its Brevo message id (`[mail] sent … (Brevo <id>)`), to look it up in Brevo → Transactional → Logs.
+- **Booking enquiries** (the Home page form, `#b-book`) go to `POST /api/public/enquiry` (`app/api/public/enquiry/route.ts`).
+  - **Who gets an email:** the team at `ENQUIRY_EMAIL` (default `contact@airdivealor.com`; replies go to the customer, and a "Reply on WhatsApp" button opens a chat when a phone number was given), and the customer, who gets a copy at the email they entered, in the language they used, with replies going to the team.
+  - **Form fields:** package, arrival date (not before today), number of divers (1 to 50), certification, camera, name, email, WhatsApp or phone (optional, with country code) and a message (optional, up to 2,000 characters). The same rules are checked in the browser and on the server (`lib/enquiry.ts`); errors show under each field, in English or Indonesian.
+  - **Prices** in the emails are worked out on the server from the published Home page prices, in the currency the visitor chose (the team also sees rupiah).
+  - **If the team's email can't be sent** (Brevo not set up or failing), the visitor sees an error with a WhatsApp link instead of "Enquiry sent", and the enquiry is written to the server log (`[enquiry] NOT DELIVERED …`). If only the customer's copy fails, the enquiry still counts as sent and the visitor is told no copy was emailed.
+  - **Spam:** 5 enquiries per 15 minutes per address, a hidden field that bots fill in, and requests from other sites are refused.
+- **Emails** (invitation, password reset, password changed, booking enquiry) are in English and Indonesian, with an HTML and a plain-text version (`lib/server/emails.ts`). **CMS › Email** (Super admin, or anyone with "Invite, edit and disable users") shows whether Brevo is connected, previews every template, and sends a test to yourself. Without `BREVO_API_KEY`, emails are only printed to the server log, and the CMS says no email was sent (it never reports an invitation as sent when it wasn't). Each email Brevo accepts is logged with its Brevo message id (`[mail] sent … (Brevo <id>)`), to look it up in Brevo → Transactional → Logs.
 - **If an invitation email fails**, the user is still added: the CMS says so, and "Resend invite" sends a fresh link (earlier links stop working).
 - **Roles** are sets of permissions, and a user gets every permission from all their roles. Permissions:
   - per page (Home, Dive sites, Facilities and rates, Dive courses, About us, Blog): view, one edit permission per section, publish, change layout

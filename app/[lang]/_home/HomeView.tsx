@@ -4,7 +4,8 @@ import { useItemHref } from "@/lib/i18n";
 import { useRef, useState } from "react";
 import { SiteFooter } from "@/components/SiteFooter";
 import { SiteHeader } from "@/components/SiteHeader";
-import { Alert, AvatarWithText, Button, ButtonLink, Eyebrow, Icon, Input, Rating, Select, Tag, asIcon } from "@/components/ui";
+import { Alert, AvatarWithText, Button, ButtonLink, Eyebrow, Icon, Input, Rating, Select, Tag, Textarea, asIcon } from "@/components/ui";
+import { CERTS, MAX_DIVERS, checkEnquiry, isoToday, type EnquiryField } from "@/lib/enquiry";
 import type { I18n } from "@/lib/cms/fields";
 import type { HomeContent, PublishedHome } from "@/lib/cms/home-types";
 import { useContent, type ContentHelpers } from "@/lib/cms/use-content";
@@ -14,8 +15,7 @@ import { DepthGauge, type GaugeStop } from "./DepthGauge";
 import { Preloader } from "./Preloader";
 import "./home.css";
 
-const DIVERS = ["1 diver", "2 divers", "3 divers", "4 divers", "5 divers", "6 divers"];
-const CERTS = ["Not certified yet", "Open Water", "Advanced", "Rescue or higher", "Dive professional"];
+
 const SECTION_IDS: Record<string, string> = { prices: "b-prices", why: "b-why", sites: "b-sites", stay: "b-stay", reviews: "b-reviews", faq: "b-faq", book: "b-book" };
 const DEPTHS: Record<string, number> = { prices: 5, why: 10, sites: 15, stay: 18, reviews: 21, faq: 27, book: 30 };
 
@@ -484,14 +484,65 @@ function Book({ c, h, b }: { c: HomeContent; h: Helpers; b: Booking }) {
   const bk = c.book;
   const { main } = useMoney(c, b.cur);
   const [date, setDate] = useState("");
-  const [divers, setDivers] = useState("2 divers");
-  const [cert, setCert] = useState("Open Water");
+  const [divers, setDivers] = useState("2");
+  const [cert, setCert] = useState<(typeof CERTS)[number]>("Open Water");
   const [cam, setCam] = useState<"Yes" | "No">("No");
   const [name, setName] = useState("");
-  const [contact, setContact] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [message, setMessage] = useState("");
+  const [website, setWebsite] = useState(""); // hidden from people: spam bots fill it
+  const [errors, setErrors] = useState<Partial<Record<EnquiryField, string>>>({});
+  const [sending, setSending] = useState(false);
+  const [sendError, setSendError] = useState("");
+  const [copyTo, setCopyTo] = useState<string | null>(null);
   const pk = c.prices.packages.find((p) => p.id === b.pkg) ?? c.prices.packages[0];
-  const nDiv = parseInt(divers) || 1;
+  const nDiv = Math.max(1, parseInt(divers) || 1);
   const dep = bk.depositPercent / 100;
+  const diversLabel = (n: number) => `${n} ${t(n === 1 ? "diver" : "divers")}`;
+  const values = { arrival: date, divers: Number(divers), name, email, phone, message };
+  const err = (f: EnquiryField) => (errors[f] ? t(errors[f]!) : undefined);
+  const edit = (f: EnquiryField, set: (v: string) => void) => (e: { target: { value: string } }) => {
+    set(e.target.value);
+    if (errors[f]) setErrors((x) => ({ ...x, [f]: undefined }));
+  };
+  const review = () => {
+    const found = checkEnquiry(values);
+    setErrors(found);
+    const first = (["arrival", "divers", "name", "email", "phone", "message"] as const).find((f) => found[f]);
+    if (first) return document.getElementById(`bk-${first}`)?.focus();
+    setSendError("");
+    b.setStep(3);
+  };
+  const send = async () => {
+    setSending(true);
+    setSendError("");
+    try {
+      const res = await fetch("/api/public/enquiry", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ lang: h.lang === "ID" ? "id" : "en", currency: b.cur, pkg: pk.id, arrival: date, divers: nDiv, cert, camera: cam === "Yes", name, email, phone, message, website }),
+      });
+      const j = await res.json().catch(() => ({}));
+      if (res.ok) {
+        setCopyTo(j.copySent ? email.trim() : "");
+        b.setSent(true);
+        return;
+      }
+      if (res.status === 422 && Array.isArray(j.details)) {
+        // The server found a problem the form missed (e.g. the date passed meanwhile): back to the fields.
+        const found = checkEnquiry(values);
+        setErrors(Object.keys(found).length ? found : { arrival: "Please check the date and your details." });
+        b.setStep(2);
+        return;
+      }
+      setSendError(res.status === 429 ? "Too many enquiries from this connection. Please wait a few minutes, or message us on WhatsApp." : "We couldn't send your enquiry right now. Please message us on WhatsApp instead, or try again in a few minutes.");
+    } catch {
+      setSendError("We couldn't send your enquiry. Check your connection and try again, or message us on WhatsApp.");
+    } finally {
+      setSending(false);
+    }
+  };
   return (
     <section id="b-book" data-theme="dark" className="section home-book">
       <div className="home-book__split">
@@ -542,9 +593,9 @@ function Book({ c, h, b }: { c: HomeContent; h: Helpers; b: Booking }) {
             )}
             {!b.sent && b.step === 2 && (
               <div className="home-form__grid">
-                <Input id="bk-date" label={t("Arrival date")} type="date" required value={date} onChange={(e) => setDate(e.target.value)} />
-                <Select id="bk-divers" label={t("Divers")} value={divers} onChange={(e) => setDivers(e.target.value)} options={DIVERS.map((d) => ({ value: d, label: t(d) }))} />
-                <Select id="bk-cert" label={t("Certification level")} value={cert} onChange={(e) => setCert(e.target.value)} options={CERTS.map((x) => ({ value: x, label: t(x) }))} />
+                <Input id="bk-arrival" label={t("Arrival date")} type="date" required min={isoToday()} value={date} onChange={edit("arrival", setDate)} error={err("arrival")} />
+                <Input id="bk-divers" label={t("Divers")} type="number" inputMode="numeric" required min={1} max={MAX_DIVERS} step={1} value={divers} onChange={edit("divers", setDivers)} error={err("divers")} />
+                <Select id="bk-cert" label={t("Certification level")} value={cert} onChange={(e) => setCert(e.target.value as (typeof CERTS)[number])} options={CERTS.map((x) => ({ value: x, label: t(x) }))} />
                 <div className="home-form__cam">
                   <div className="tw-field__label">{t("Bringing a camera?")}</div>
                   <div className="home-form__cam-btns">
@@ -556,13 +607,21 @@ function Book({ c, h, b }: { c: HomeContent; h: Helpers; b: Booking }) {
                     </Button>
                   </div>
                 </div>
-                <Input id="bk-name" label={t("Name")} required placeholder={t("Your name")} value={name} onChange={(e) => setName(e.target.value)} />
-                <Input id="bk-contact" label={t("Email or WhatsApp")} required placeholder="you@email.com" value={contact} onChange={(e) => setContact(e.target.value)} />
+                <Input id="bk-name" label={t("Name")} required autoComplete="name" placeholder={t("Your name")} value={name} onChange={edit("name", setName)} error={err("name")} />
+                <Input id="bk-email" label={t("Email")} type="email" required autoComplete="email" placeholder="you@email.com" value={email} onChange={edit("email", setEmail)} error={err("email")} hint={t("We send a copy of your enquiry here.")} />
+                <Input id="bk-phone" label={t("WhatsApp or phone")} labelNote={t("(optional)")} type="tel" autoComplete="tel" placeholder="+62 812 3456 7890" value={phone} onChange={edit("phone", setPhone)} error={err("phone")} hint={t("With country code.")} />
+                <div className="home-form__wide">
+                  <Textarea id="bk-message" label={t("Message")} labelNote={t("(optional)")} rows={4} maxLength={MAX_MESSAGE_LEN} placeholder={t("Anything else we should know? Flexible dates, dive experience, special requests…")} value={message} onChange={edit("message", setMessage)} error={err("message")} />
+                </div>
+                <div className="home-form__hp" aria-hidden="true">
+                  <label htmlFor="bk-website">Website</label>
+                  <input id="bk-website" tabIndex={-1} autoComplete="off" value={website} onChange={(e) => setWebsite(e.target.value)} />
+                </div>
                 <div className="home-form__nav">
                   <Button variant="secondary" size="large" icon="arrow-left" onClick={() => b.setStep(1)}>
                     {t("Back")}
                   </Button>
-                  <Button variant="primary" size="large" icon="arrow-right" iconPosition="suffix" onClick={() => b.setStep(3)}>
+                  <Button variant="primary" size="large" icon="arrow-right" iconPosition="suffix" onClick={review}>
                     {t("Review")}
                   </Button>
                 </div>
@@ -572,9 +631,11 @@ function Book({ c, h, b }: { c: HomeContent; h: Helpers; b: Booking }) {
               <div className="home-form__stack home-form__stack--24">
                 <div className="home-form__summary">
                   <SumRow label={t("Trip")} value={L(pk.name)} />
-                  <SumRow label={t("Arrival")} value={date || t("Not set")} />
-                  <SumRow label={t("Group")} value={`${t(divers)} · ${t(cert)}`} />
+                  <SumRow label={t("Arrival")} value={date ? arrivalLabel(date, h.lang) : t("Not set")} />
+                  <SumRow label={t("Group")} value={`${diversLabel(nDiv)} · ${t(cert)}`} />
                   <SumRow label={t("Camera")} value={t(cam === "Yes" ? "Yes, bringing a camera" : "No camera")} />
+                  <SumRow label={t("Contact")} value={[name.trim(), email.trim(), phone.trim()].filter(Boolean).join(" · ")} />
+                  {message.trim() && <SumRow label={t("Message")} value={message.trim()} wrap />}
                   <SumRow label={t("Estimate")} value={`${main(pk.priceIdr)} × ${nDiv} = ${main(pk.priceIdr * nDiv)}`} />
                   <div className="home-form__deposit">
                     <span>{`${t("Deposit")} (${bk.depositPercent}%)`}</span>
@@ -582,12 +643,21 @@ function Book({ c, h, b }: { c: HomeContent; h: Helpers; b: Booking }) {
                   </div>
                 </div>
                 {L(bk.depositNote) && <Alert>{L(bk.depositNote)}</Alert>}
+                {sendError && (
+                  <Alert type="error" description={
+                    <ButtonLink href={waLink()} external variant="text" icon="message-circle">
+                      {t("Chat on WhatsApp")}
+                    </ButtonLink>
+                  }>
+                    {t(sendError)}
+                  </Alert>
+                )}
                 <div className="home-form__nav">
-                  <Button variant="secondary" size="large" icon="arrow-left" onClick={() => b.setStep(2)}>
+                  <Button variant="secondary" size="large" icon="arrow-left" disabled={sending} onClick={() => b.setStep(2)}>
                     {t("Back")}
                   </Button>
-                  <Button variant="primary" size="xlarge" onClick={() => b.setSent(true)}>
-                    {t("Send enquiry")}
+                  <Button variant="primary" size="xlarge" disabled={sending} aria-busy={sending || undefined} onClick={send}>
+                    {t(sending ? "Sending…" : "Send enquiry")}
                   </Button>
                 </div>
                 {L(bk.cancellation) && (
@@ -599,7 +669,15 @@ function Book({ c, h, b }: { c: HomeContent; h: Helpers; b: Booking }) {
             )}
             {b.sent && (
               <div className="home-form__stack home-form__stack--24">
-                <Alert type="success" description={L(bk.successText)}>
+                <Alert
+                  type="success"
+                  description={
+                    <>
+                      {L(bk.successText)}
+                      {copyTo ? <> {t("We sent a copy to {email}.").replace("{email}", copyTo)}</> : copyTo === "" ? <> {t("We couldn't email you a copy, but your enquiry reached us.")}</> : null}
+                    </>
+                  }
+                >
                   {L(bk.successTitle)}
                 </Alert>
                 <div className="home-form__sent">
@@ -612,6 +690,8 @@ function Book({ c, h, b }: { c: HomeContent; h: Helpers; b: Booking }) {
                     onClick={() => {
                       b.setSent(false);
                       b.setStep(1);
+                      setCopyTo(null);
+                      setMessage("");
                     }}
                   >
                     {t("Start again")}
@@ -626,9 +706,17 @@ function Book({ c, h, b }: { c: HomeContent; h: Helpers; b: Booking }) {
   );
 }
 
-function SumRow({ label, value }: { label: string; value: string }) {
+const MAX_MESSAGE_LEN = 2000;
+
+/** "Tue, 10 Nov 2026" in the page language. */
+function arrivalLabel(iso: string, lang: "EN" | "ID") {
+  const [y, m, d] = iso.split("-").map(Number);
+  return new Intl.DateTimeFormat(lang === "ID" ? "id-ID" : "en-GB", { weekday: "short", day: "numeric", month: "short", year: "numeric", timeZone: "UTC" }).format(new Date(Date.UTC(y, m - 1, d)));
+}
+
+function SumRow({ label, value, wrap }: { label: string; value: string; wrap?: boolean }) {
   return (
-    <div className="home-form__sumrow">
+    <div className="home-form__sumrow" data-wrap={wrap ? "" : undefined}>
       <span>{label}</span>
       <span>{value}</span>
     </div>

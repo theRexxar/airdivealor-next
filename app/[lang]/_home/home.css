@@ -215,7 +215,9 @@
 /* Book */
 .home-book { background: var(--bg-default); border-top: 1px solid var(--border-default); }
 .home-book__split { display: flex; flex-wrap: wrap; gap: clamp(40px, 8vw, 112px); align-items: flex-start; }
-.home-book__intro { flex: 4 1 300px; min-width: 0; display: flex; flex-direction: column; gap: 24px; position: sticky; top: 96px; }
+.home-book__intro { flex: 4 1 300px; min-width: 0; display: flex; flex-direction: column; gap: 24px; }
+/* Stays in view beside the form only when the two sit side by side; stacked, it would slide over the form. */
+@media (min-width: 1000px) { .home-book__intro { position: sticky; top: 96px; } }
 .home-book__title { margin: 0; font: 500 clamp(40px, 4.2vw, 60px)/1.05 var(--font-playfair); }
 .home-book__lead { margin: 0; font: 400 18px/1.5 var(--font-roboto); color: var(--text-secondary); }
 .home-book__quote { display: flex; flex-direction: column; gap: 10px; padding-top: 24px; border-top: 1px solid var(--border-default); }
@@ -253,6 +255,11 @@
 .home-form__end { display: flex; justify-content: flex-end; padding-top: 12px; }
 .home-form__grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr)); gap: 20px; }
 .home-form__cam { display: flex; flex-direction: column; gap: 4px; }
+.home-form__wide { grid-column: 1 / -1; }
+/* Spam trap: out of sight and out of the tab order. */
+.home-form__hp { position: absolute; left: -10000px; width: 1px; height: 1px; overflow: hidden; }
+.home-form__sumrow[data-wrap] { flex-direction: column; gap: 6px; }
+.home-form__sumrow[data-wrap] span:last-child { text-align: left; font-weight: 400; white-space: pre-wrap; overflow-wrap: anywhere; }
 .home-form__cam-btns { display: flex; gap: 8px; }
 .home-form__nav { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 12px; justify-content: space-between; align-items: center; padding-top: 12px; }
 .home-form__stack--24 .home-form__nav { padding-top: 0; }

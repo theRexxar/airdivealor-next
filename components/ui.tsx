@@ -102,11 +102,11 @@ export function Tag({ children, icon, tone = "grey" }: { children: ReactNode; ic
   );
 }
 
-export function Alert({ children, type = "info", description }: { children: ReactNode; type?: "info" | "success"; description?: ReactNode }) {
+export function Alert({ children, type = "info", description }: { children: ReactNode; type?: "info" | "success" | "error"; description?: ReactNode }) {
   return (
-    <div className={`tw-alert tw-alert--${type}`} role="status">
+    <div className={`tw-alert tw-alert--${type}`} role={type === "error" ? "alert" : "status"}>
       <span className="tw-alert__icon">
-        <Icon name={type === "success" ? "circle-check" : "info"} size={20} />
+        <Icon name={type === "success" ? "circle-check" : type === "error" ? "circle-alert" : "info"} size={20} />
       </span>
       <div className="tw-alert__body">
         <div className={description ? "tw-alert__title tw-alert__title--strong" : "tw-alert__title"}>{children}</div>
@@ -160,19 +160,60 @@ interface FieldProps {
   id: string;
   label: string;
   required?: boolean;
+  /** Shown after the label, e.g. "(optional)". */
+  labelNote?: string;
+  /** Help under the field. */
+  hint?: string;
+  /** Error under the field; marks it invalid. */
+  error?: string;
 }
 
-export function Input({ id, label, required, ...rest }: FieldProps & React.InputHTMLAttributes<HTMLInputElement>) {
+/** Label, control, hint and error, wired up for screen readers. */
+function Field({ id, label, required, labelNote, hint, error, children }: FieldProps & { children: (describedBy: string | undefined) => ReactNode }) {
+  const describedBy = [hint && `${id}-hint`, error && `${id}-error`].filter(Boolean).join(" ") || undefined;
   return (
-    <div className="tw-field">
+    <div className="tw-field" data-error={error ? "" : undefined}>
       <label className="tw-field__label" htmlFor={id}>
         {label}
         {required && <span className="tw-field__req" aria-hidden="true">*</span>}
+        {labelNote && <span className="tw-field__note"> {labelNote}</span>}
       </label>
-      <div className="tw-field__control">
-        <input id={id} className="tw-field__input" required={required} {...rest} />
-      </div>
+      {children(describedBy)}
+      {hint && !error && (
+        <span id={`${id}-hint`} className="tw-field__hint">
+          {hint}
+        </span>
+      )}
+      {error && (
+        <span id={`${id}-error`} className="tw-field__error">
+          {error}
+        </span>
+      )}
     </div>
+  );
+}
+
+export function Input({ id, label, required, labelNote, hint, error, ...rest }: FieldProps & React.InputHTMLAttributes<HTMLInputElement>) {
+  return (
+    <Field id={id} label={label} required={required} labelNote={labelNote} hint={hint} error={error}>
+      {(describedBy) => (
+        <div className="tw-field__control">
+          <input id={id} className="tw-field__input" required={required} aria-invalid={error ? true : undefined} aria-describedby={describedBy} {...rest} />
+        </div>
+      )}
+    </Field>
+  );
+}
+
+export function Textarea({ id, label, required, labelNote, hint, error, ...rest }: FieldProps & React.TextareaHTMLAttributes<HTMLTextAreaElement>) {
+  return (
+    <Field id={id} label={label} required={required} labelNote={labelNote} hint={hint} error={error}>
+      {(describedBy) => (
+        <div className="tw-field__control tw-field__control--area">
+          <textarea id={id} className="tw-field__input tw-field__textarea" required={required} aria-invalid={error ? true : undefined} aria-describedby={describedBy} {...rest} />
+        </div>
+      )}
+    </Field>
   );
 }
 

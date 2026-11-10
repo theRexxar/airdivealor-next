@@ -14,6 +14,10 @@ interface Lang {
   title: string;
   paragraphs: string[];
   button?: string;
+  /** A table of details after the paragraphs (label, value). Values are shown as written, line breaks kept. */
+  rows?: [string, string][];
+  /** Text after the table. */
+  after?: string[];
 }
 
 interface Layout {
@@ -25,6 +29,8 @@ interface Layout {
   url?: string;
   /** Small print at the bottom, in both languages. */
   note: { en: string; id: string };
+  /** Only this language (e.g. a customer's copy in the language they used on the website). */
+  only?: "en" | "id";
 }
 
 const esc = (s: string) => s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
@@ -40,9 +46,23 @@ function button(url: string, label: string) {
 </td></tr></table>`;
 }
 
+/** Label and value rows (e.g. a booking summary). Values are escaped, line breaks kept. */
+function rowsTable(rows: [string, string][]) {
+  return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:4px 0 18px;border-top:1px solid ${C.line}">
+${rows
+  .map(
+    ([k, v]) => `<tr><td valign="top" style="padding:10px 12px 10px 0;border-bottom:1px solid ${C.line};font:400 14px/1.5 Roboto,Arial,sans-serif;color:${C.muted};white-space:nowrap">${esc(k)}</td>
+<td valign="top" style="padding:10px 0;border-bottom:1px solid ${C.line};font:500 14px/1.5 Roboto,Arial,sans-serif;color:${C.ink};white-space:pre-wrap;word-break:break-word">${esc(v)}</td></tr>`,
+  )
+  .join("\n")}
+</table>`;
+}
+
 function block(l: Lang, url: string | undefined, lang: "en" | "id") {
   return `<h1 style="margin:0 0 16px;font:600 22px/1.3 Georgia,'Times New Roman',serif;color:${C.ink}">${esc(l.title)}</h1>
 ${l.paragraphs.map((p) => `<p style="margin:0 0 14px;font:400 15px/1.6 Roboto,Arial,sans-serif;color:${C.body}">${rich(p)}</p>`).join("\n")}
+${l.rows?.length ? rowsTable(l.rows) : ""}
+${(l.after ?? []).map((p) => `<p style="margin:0 0 14px;font:400 15px/1.6 Roboto,Arial,sans-serif;color:${C.body}">${rich(p)}</p>`).join("\n")}
 ${url && l.button ? button(url, l.button) : ""}
 ${url && l.button ? `<p style="margin:8px 0 0;font:400 12px/1.5 Roboto,Arial,sans-serif;color:${C.muted}">${lang === "en" ? "Or copy this link into your browser:" : "Atau salin link ini ke browser Anda:"}<br><a href="${esc(url)}" style="color:${C.blue};word-break:break-all">${esc(url)}</a></p>` : ""}`;
 }
@@ -51,7 +71,7 @@ ${url && l.button ? `<p style="margin:8px 0 0;font:400 12px/1.5 Roboto,Arial,san
 function layout(o: Layout): { html: string; text: string } {
   const site = o.siteUrl.replace(/\/$/, "");
   const html = `<!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light"><title>${esc(o.en.title)}</title></head>
+<html lang="${o.only ?? "en"}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light"><title>${esc(o[o.only ?? "en"].title)}</title></head>
 <body style="margin:0;padding:0;background:${C.bg}">
 <div style="display:none;max-height:0;overflow:hidden;opacity:0">${esc(o.preheader)}</div>
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${C.bg}"><tr><td align="center" style="padding:32px 12px">
@@ -62,20 +82,34 @@ function layout(o: Layout): { html: string; text: string } {
 <td style="font:600 18px/1 Georgia,'Times New Roman',serif;color:#ffffff;white-space:nowrap">Air Dive Alor</td>
 </tr></table>
 </td></tr>
-<tr><td style="padding:32px 28px 8px">${block(o.en, o.url, "en")}</td></tr>
+${
+  o.only
+    ? `<tr><td style="padding:32px 28px 8px">${block(o[o.only], o.url, o.only)}</td></tr>
+<tr><td style="padding:16px 28px 28px"><p style="margin:0;font:400 12px/1.5 Roboto,Arial,sans-serif;color:${C.muted}">${rich(o.note[o.only])}</p></td></tr>`
+    : `<tr><td style="padding:32px 28px 8px">${block(o.en, o.url, "en")}</td></tr>
 <tr><td style="padding:16px 28px 0"><div style="border-top:1px solid ${C.line};padding-top:20px;font:600 11px/1 Roboto,Arial,sans-serif;letter-spacing:.08em;text-transform:uppercase;color:${C.muted}">Bahasa Indonesia</div></td></tr>
 <tr><td style="padding:16px 28px 8px">${block(o.id, o.url, "id")}</td></tr>
 <tr><td style="padding:24px 28px 28px">
 <p style="margin:0 0 6px;font:400 12px/1.5 Roboto,Arial,sans-serif;color:${C.muted}">${rich(o.note.en)}</p>
 <p style="margin:0;font:400 12px/1.5 Roboto,Arial,sans-serif;color:${C.muted}">${rich(o.note.id)}</p>
-</td></tr>
+</td></tr>`
+}
 </table>
 <p style="margin:16px 0 0;font:400 12px/1.5 Roboto,Arial,sans-serif;color:${C.muted}">Air Dive Alor · Alor Kecil, Nusa Tenggara Timur, Indonesia<br><a href="${esc(site)}" style="color:${C.muted}">${esc(site.replace(/^https?:\/\//, ""))}</a></p>
 </td></tr></table>
 </body></html>`;
 
-  const section = (l: Lang) => [l.title, "", ...l.paragraphs.map(plain).flatMap((p) => [p, ""]), ...(o.url && l.button ? [`${l.button}: ${o.url}`, ""] : [])];
-  const text = [...section(o.en), "—", "", ...section(o.id), "—", plain(o.note.en), plain(o.note.id), "", `Air Dive Alor · ${site}`].join("\n");
+  const section = (l: Lang) => [
+    l.title,
+    "",
+    ...l.paragraphs.map(plain).flatMap((p) => [p, ""]),
+    ...(l.rows?.length ? [...l.rows.map(([k, v]) => `${k}: ${v.includes("\n") ? `\n${v}` : v}`), ""] : []),
+    ...(l.after ?? []).map(plain).flatMap((p) => [p, ""]),
+    ...(o.url && l.button ? [`${l.button}: ${o.url}`, ""] : []),
+  ];
+  const text = o.only
+    ? [...section(o[o.only]), "—", plain(o.note[o.only]), "", `Air Dive Alor · ${site}`].join("\n")
+    : [...section(o.en), "—", "", ...section(o.id), "—", plain(o.note.en), plain(o.note.id), "", `Air Dive Alor · ${site}`].join("\n");
   return { html, text };
 }
 
@@ -212,6 +246,162 @@ export function testEmail(d: { siteUrl: string; name: string; when: Date }): Ema
   };
 }
 
+/** A booking enquiry as the emails show it (prices already formatted). */
+export interface EnquiryEmailData {
+  siteUrl: string;
+  when: Date;
+  lang: "en" | "id";
+  name: string;
+  email: string;
+  phone: string;
+  trip: { en: string; id: string };
+  /** YYYY-MM-DD */
+  arrival: string;
+  divers: number;
+  cert: string;
+  camera: boolean;
+  /** e.g. "Rp 9.800.000 × 2 = Rp 19.600.000" in the currency the customer saw. */
+  estimate: string;
+  /** e.g. "Rp 5.880.000 (30%)" */
+  deposit: string;
+  /** The estimate in rupiah, for the team (whatever currency the customer used). */
+  estimateIdr: string;
+  message: string;
+  whatsappNumber: string;
+}
+
+const CERT_ID: Record<string, string> = {
+  "Not certified yet": "Belum bersertifikat",
+  "Open Water": "Open Water",
+  Advanced: "Advanced",
+  "Rescue or higher": "Rescue atau lebih tinggi",
+  "Dive professional": "Profesional selam",
+};
+
+/** "Tue, 10 Nov 2026" / "Sel, 10 Nov 2026" */
+export function dateLabelLong(iso: string, lang: "en" | "id") {
+  const [y, m, d] = iso.split("-").map(Number);
+  return new Intl.DateTimeFormat(lang === "en" ? "en-GB" : "id-ID", { weekday: "short", day: "numeric", month: "short", year: "numeric", timeZone: "UTC" }).format(new Date(Date.UTC(y, m - 1, d)));
+}
+
+const diversLabel = (n: number, lang: "en" | "id") => (lang === "en" ? `${n} ${n === 1 ? "diver" : "divers"}` : `${n} penyelam`);
+const waNumber = (phone: string) => phone.replace(/[^\d]/g, "").replace(/^0/, "62");
+
+/** The customer's copy of their enquiry, in the language they used on the website. */
+export function enquiryCustomerEmail(d: EnquiryEmailData): Email {
+  const site = d.siteUrl.replace(/\/$/, "");
+  const wa = `https://api.whatsapp.com/send/?phone=${d.whatsappNumber}`;
+  const rows = (lang: "en" | "id"): [string, string][] => {
+    const L = (en: string, id: string) => (lang === "en" ? en : id);
+    return [
+      [L("Trip", "Paket"), d.trip[lang] || d.trip.en],
+      [L("Arrival", "Tanggal tiba"), dateLabelLong(d.arrival, lang)],
+      [L("Group", "Grup"), `${diversLabel(d.divers, lang)} · ${lang === "en" ? d.cert : (CERT_ID[d.cert] ?? d.cert)}`],
+      [L("Camera", "Kamera"), d.camera ? L("Yes, bringing a camera", "Ya, bawa kamera") : L("No camera", "Tidak bawa kamera")],
+      [L("Estimate", "Perkiraan"), d.estimate],
+      [L("Deposit", "DP"), d.deposit],
+      [L("Name", "Nama"), d.name],
+      ["Email", d.email],
+      ...(d.phone ? ([["WhatsApp", d.phone]] as [string, string][]) : []),
+      ...(d.message ? ([[L("Message", "Pesan"), d.message]] as [string, string][]) : []),
+    ];
+  };
+  return {
+    subject: d.lang === "en" ? "We received your dive enquiry · Air Dive Alor" : "Permintaan selam Anda sudah kami terima · Air Dive Alor",
+    ...layout({
+      siteUrl: d.siteUrl,
+      only: d.lang,
+      preheader: d.lang === "en" ? "A copy of your enquiry. We reply within 24 hours with your quote." : "Salinan permintaan Anda. Kami balas dalam 24 jam dengan penawaran harga.",
+      url: wa,
+      en: {
+        title: "We received your enquiry",
+        paragraphs: [
+          `Hi ${d.name},`,
+          "Thank you for planning your dive trip with us. This is a copy of the enquiry you sent from our website.",
+          "We reply by email or WhatsApp **within 24 hours** with your quote and a deposit link. You pay the deposit only after we confirm your dates.",
+        ],
+        rows: rows("en"),
+        after: ["Want to change something? Reply to this email or message us on WhatsApp."],
+        button: "Chat on WhatsApp",
+      },
+      id: {
+        title: "Permintaan Anda sudah kami terima",
+        paragraphs: [
+          `Halo ${d.name},`,
+          "Terima kasih sudah merencanakan liburan selam bersama kami. Ini salinan permintaan yang Anda kirim dari website kami.",
+          "Kami balas lewat email atau WhatsApp **dalam 24 jam**, berisi penawaran harga dan link DP. Anda baru bayar DP setelah kami mengonfirmasi tanggal.",
+        ],
+        rows: rows("id"),
+        after: ["Ingin mengubah sesuatu? Balas email ini atau chat kami di WhatsApp."],
+        button: "Chat di WhatsApp",
+      },
+      note: {
+        en: `You received this because this email address was entered in the booking form on ${site.replace(/^https?:\/\//, "")}. If that wasn't you, you can ignore this email.`,
+        id: `Anda menerima email ini karena alamat email ini diisi di form pemesanan ${site.replace(/^https?:\/\//, "")}. Jika itu bukan Anda, abaikan email ini.`,
+      },
+    }),
+  };
+}
+
+/** The team's notification of a new enquiry (English). Replies go to the customer. */
+export function enquiryAdminEmail(d: EnquiryEmailData): Email {
+  const site = d.siteUrl.replace(/\/$/, "");
+  const phoneDigits = d.phone ? waNumber(d.phone) : "";
+  const reply = phoneDigits
+    ? `https://api.whatsapp.com/send/?phone=${phoneDigits}&text=${encodeURIComponent(`Hi ${d.name}, thank you for your enquiry for ${d.trip.en} from ${dateLabelLong(d.arrival, "en")}.`)}`
+    : `mailto:${d.email}?subject=${encodeURIComponent(`Your Air Dive Alor enquiry: ${d.trip.en}`)}`;
+  const rows: [string, string][] = [
+    ["Name", d.name],
+    ["Email", d.email],
+    ["WhatsApp / phone", d.phone || "Not given"],
+    ["Trip", d.trip.en],
+    ["Arrival", dateLabelLong(d.arrival, "en")],
+    ["Divers", String(d.divers)],
+    ["Certification", d.cert],
+    ["Camera", d.camera ? "Yes" : "No"],
+    ["Estimate", d.estimate === d.estimateIdr ? d.estimate : `${d.estimate}\n${d.estimateIdr}`],
+    ["Deposit", d.deposit],
+    ["Language", d.lang === "en" ? "English" : "Bahasa Indonesia"],
+    ["Message", d.message || "None"],
+  ];
+  return {
+    subject: `New enquiry: ${d.trip.en}, ${dateLabelLong(d.arrival, "en")}, ${diversLabel(d.divers, "en")} (${d.name})`,
+    ...layout({
+      siteUrl: d.siteUrl,
+      only: "en",
+      preheader: `${d.name} · ${d.trip.en} · arriving ${dateLabelLong(d.arrival, "en")} · ${diversLabel(d.divers, "en")}`,
+      url: reply,
+      en: {
+        title: "New booking enquiry",
+        paragraphs: [`**${d.name}** sent an enquiry from the website on ${witaTime(d.when)}. Reply to this email to answer them by email; the customer also received a copy.`],
+        rows,
+        button: phoneDigits ? "Reply on WhatsApp" : "Reply by email",
+      },
+      id: { title: "", paragraphs: [] },
+      note: { en: `Sent by the booking form on ${site.replace(/^https?:\/\//, "")}. Replies to this email go to ${d.email}.`, id: "" },
+    }),
+  };
+}
+
+const SAMPLE_ENQUIRY = (siteUrl: string, lang: "en" | "id"): EnquiryEmailData => ({
+  siteUrl,
+  when: new Date(),
+  lang,
+  name: "Sari Wijaya",
+  email: "sari@example.com",
+  phone: "+62 812 3456 7890",
+  trip: { en: "2 dives a day", id: "2 penyelaman sehari" },
+  arrival: new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10),
+  divers: 2,
+  cert: "Open Water",
+  camera: true,
+  estimate: "Rp 9.800.000 × 2 = Rp 19.600.000",
+  deposit: "Rp 5.880.000 (30%)",
+  estimateIdr: "Rp 9.800.000 × 2 = Rp 19.600.000",
+  message: "We'd love to see pygmy seahorses.\nCan you pick us up at 10:30?",
+  whatsappNumber: "6281395505313",
+});
+
 /** Templates with sample data, for the preview in CMS › Email. */
 export function sampleEmails(siteUrl: string, me: { name: string }) {
   const site = siteUrl.replace(/\/$/, "");
@@ -222,6 +412,9 @@ export function sampleEmails(siteUrl: string, me: { name: string }) {
     reset: { label: "Password reset", email: resetEmail({ siteUrl, name: me.name, url: link, minutes: 60, when: now, ip: "203.0.113.7" }) },
     changed: { label: "Password changed", email: passwordChangedEmail({ siteUrl, name: me.name, when: now, how: "reset", ip: "203.0.113.7" }) },
     test: { label: "Test email", email: testEmail({ siteUrl, name: me.name, when: now }) },
+    enquiryAdmin: { label: "Booking enquiry: to the team", email: enquiryAdminEmail(SAMPLE_ENQUIRY(siteUrl, "en")) },
+    enquiryCustomer: { label: "Booking enquiry: customer copy (EN)", email: enquiryCustomerEmail(SAMPLE_ENQUIRY(siteUrl, "en")) },
+    enquiryCustomerId: { label: "Booking enquiry: customer copy (ID)", email: enquiryCustomerEmail(SAMPLE_ENQUIRY(siteUrl, "id")) },
   } as const;
 }
 export type EmailTemplateKey = keyof ReturnType<typeof sampleEmails>;

@@ -14,8 +14,12 @@ const schema = z.object({
   S3_BUCKET: z.string().default("airdivealor-media"),
   S3_PUBLIC_URL: z.string().default("http://127.0.0.1:9000/airdivealor-media"),
   BREVO_API_KEY: z.string().default(""),
+  /** Brevo's API. Only changed for tests (a local stand-in that records the emails). */
+  BREVO_API_URL: z.string().url().default("https://api.brevo.com/v3"),
   MAIL_FROM_EMAIL: z.string().default("no-reply@airdivealor.com"),
   MAIL_FROM_NAME: z.string().default("Air Dive Alor"),
+  /** Where booking enquiries from the website go. */
+  ENQUIRY_EMAIL: z.string().email().default("contact@airdivealor.com"),
   SEED_ADMIN_EMAIL: z.string().default("admin@airdivealor.com"),
   SEED_ADMIN_PASSWORD: z.string().default(""),
 });

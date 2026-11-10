@@ -19,6 +19,7 @@ interface Settings {
   configured: boolean;
   from: { email: string; name: string };
   siteUrl: string;
+  enquiryTo: string;
   me: { email: string };
   templates: Template[];
 }
@@ -63,7 +64,7 @@ export default function EmailPage() {
 
   return (
     <>
-      <PageHead title="Email" sub="The emails the CMS sends for invitations and passwords. Each one has English and Indonesian text." crumbs={[{ label: "Settings" }, { label: "Email" }]} />
+      <PageHead title="Email" sub="The emails the website sends: CMS invitations and passwords, and booking enquiries from the Home page form (to the team, and a copy to the customer in their language)." crumbs={[{ label: "Settings" }, { label: "Email" }]} />
 
       <div className="cms-card" style={{ marginBottom: 24 }}>
         <div className="cms-card__head">
@@ -75,6 +76,8 @@ export default function EmailPage() {
             Sender: <strong>{data.from.name}</strong> &lt;{data.from.email}&gt;
             <br />
             Links point to: <strong>{data.siteUrl}</strong>
+            <br />
+            Booking enquiries go to: <strong>{data.enquiryTo}</strong>
           </div>
           {!data.configured && (
             <Alert>

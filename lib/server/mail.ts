@@ -2,6 +2,8 @@ import { env } from "./env";
 
 interface Mail {
   to: { email: string; name?: string };
+  /** Where replies go, e.g. the customer for the team's copy of an enquiry. */
+  replyTo?: { email: string; name?: string };
   subject: string;
   html: string;
   text: string;
@@ -23,12 +25,13 @@ export async function sendMail(mail: Mail): Promise<SendResult> {
     console.warn(`[mail:dev] not sent (BREVO_API_KEY is not set). To: ${mail.to.email}\nSubject: ${mail.subject}\n\n${mail.text}\n`);
     return { sent: false };
   }
-  const res = await fetch("https://api.brevo.com/v3/smtp/email", {
+  const res = await fetch(`${env.BREVO_API_URL.replace(/\/$/, "")}/smtp/email`, {
     method: "POST",
     headers: { "api-key": env.BREVO_API_KEY, "content-type": "application/json", accept: "application/json" },
     body: JSON.stringify({
       sender: { email: env.MAIL_FROM_EMAIL, name: env.MAIL_FROM_NAME },
       to: [mail.to],
+      ...(mail.replyTo ? { replyTo: mail.replyTo } : {}),
       subject: mail.subject,
       htmlContent: mail.html,
       textContent: mail.text,
