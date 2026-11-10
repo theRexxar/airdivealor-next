@@ -143,9 +143,10 @@ export const HOME_SECTIONS: SectionDef[] = [
     key: "faq",
     label: "FAQ",
     depth: 27,
-    description: "Questions and answers, and the WhatsApp help box.",
+    description: "Questions and answers, and the WhatsApp help box. A question can link to its full answer on the FAQ page.",
     fields: [
       ...eyebrowTitle(),
+      F.i18n("moreLabel", "Link to the full answer: text", { help: "Shown under questions that link to a full answer, e.g. “Read the full answer”. A question can use its own text instead." }),
       F.list(
         "items",
         "Questions",
@@ -153,7 +154,8 @@ export const HOME_SECTIONS: SectionDef[] = [
         [
           F.i18n("q", "Question", { required: true }),
           F.i18n("a", "Answer", { required: true, multiline: true }),
-          F.ref("page", "Full answer", "faqs", { help: "Optional. A question from FAQ questions with a full answer: adds a “Read the full answer” link." }),
+          F.ref("page", "Full answer", "faqs", { help: "Optional. A question from FAQ questions with a full answer: adds a link to it under the answer." }),
+          F.i18n("moreLabel", "Link text", { help: "Optional. Leave empty to use the section's link text." }),
         ],
         { titleKey: "q" },
       ),

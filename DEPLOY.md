@@ -76,7 +76,7 @@ Before `media.airdivealor.com` is live, you can test with MinIO's Railway domain
    - Jobs queued in the meantime are processed as soon as the worker starts.
 3. Open a shell in web with the Railway CLI, `railway ssh` (select the web service), and run:
    - `npm run cms:seed`: roles, the first admin, all page content, dive sites, courses, blog stories and categories, plus the local photos. It is safe to run again: it only adds what is missing. On an existing database it also gives every dive site, course and story the new **Web address (Indonesian)** field (the stories get Indonesian addresses, the rest stay empty, which means "same as English"), and replaces the untranslated Indonesian search titles and descriptions that earlier versions shipped (only where nobody has edited them).
-     - It adds the **FAQ** page and its five questions (published), including the full answer to “How do I get to Alor?”, and links the first Home FAQ question to it.
+     - It adds the **FAQ** page and its five questions (published), including the full answer to “How do I get to Alor?”, and links the first Home FAQ question to it (with the link text “Read the full answer” / “Baca jawaban lengkap”, editable in *Pages › Home › FAQ*).
      - It adds the new story “What to pack for diving in Alor” as a **draft**: read it in *Content › Blog stories*, then publish it. Once published it becomes the newest story, so it is featured at the top of the blog.
    - `npm run cms:import-remote -- --dry-run`: lists the images still hotlinked from the old `airdivealor.com` and Wix (about 60), and the old-blog links.
    - `npm run cms:import-remote`: copies those images into the media library. This **must run before DNS moves**, while the old site still answers at `airdivealor.com`.

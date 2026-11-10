@@ -241,15 +241,21 @@ async function linkHomeFaq() {
   const row = await db.query.pageSections.findFirst({ where: and(eq(schema.pageSections.pageId, page.id), eq(schema.pageSections.key, "faq")) });
   if (!row) return;
   const link = (v: unknown) => {
-    const faq = v as { items?: { q?: { en?: string }; page?: string }[] } | null;
-    if (!faq?.items?.some((x) => x.page === undefined)) return v;
-    return { ...faq, items: faq.items.map((x) => (x.page !== undefined ? x : { ...x, page: x.q?.en?.trim() === "How do I get to Alor?" ? "how-to-get-to-alor" : "" })) };
+    const faq = v as { moreLabel?: unknown; items?: { q?: { en?: string }; page?: string }[] } | null;
+    if (!faq?.items) return v;
+    const needsItems = faq.items.some((x) => x.page === undefined);
+    if (!needsItems && faq.moreLabel) return v;
+    return {
+      ...faq,
+      moreLabel: faq.moreLabel ?? { en: "Read the full answer", id: "Baca jawaban lengkap" },
+      items: needsItems ? faq.items.map((x) => (x.page !== undefined ? x : { ...x, page: x.q?.en?.trim() === "How do I get to Alor?" ? "how-to-get-to-alor" : "" })) : faq.items,
+    };
   };
   const draft = link(row.draft);
   const published = link(row.published);
   if (draft !== row.draft || published !== row.published) {
     await db.update(schema.pageSections).set({ draft, published }).where(eq(schema.pageSections.id, row.id));
-    console.info("page home: FAQ questions can now link to a full answer");
+    console.info("page home: FAQ questions can now link to a full answer (link text: “Read the full answer”)");
   }
 }
 

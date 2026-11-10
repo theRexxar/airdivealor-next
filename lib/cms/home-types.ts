@@ -36,7 +36,7 @@ export interface HomeContent {
     tripadvisorUrl: string;
     items: { quote: I18n; name: string; place: I18n; date: I18n; source: string }[];
   };
-  faq: { eyebrow: I18n; title: I18n; items: { q: I18n; a: I18n; page?: string }[]; help: { title: I18n; text: I18n; button: I18n } };
+  faq: { eyebrow: I18n; title: I18n; moreLabel?: I18n; items: { q: I18n; a: I18n; page?: string; moreLabel?: I18n }[]; help: { title: I18n; text: I18n; button: I18n } };
   book: {
     eyebrow: I18n;
     title: I18n;

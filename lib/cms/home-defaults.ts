@@ -909,6 +909,10 @@ export const HOME_DEFAULTS: HomeContent = {
    "en": "Before you ask.",
    "id": "Sebelum Anda bertanya."
   },
+  "moreLabel": {
+   "en": "Read the full answer",
+   "id": "Baca jawaban lengkap"
+  },
   "items": [
    {
     "q": {
@@ -919,7 +923,11 @@ export const HOME_DEFAULTS: HomeContent = {
      "en": "Fly to Kupang or Maumere, then take a short flight to Mali Airport in Alor. We meet you there; the drive to Alor Kecil takes about 45 minutes.",
      "id": "Terbang ke Kupang atau Maumere, lalu lanjut penerbangan singkat ke Bandara Mali di Alor. Kami jemput di sana; perjalanan ke Alor Kecil sekitar 45 menit."
     },
-    "page": "how-to-get-to-alor"
+    "page": "how-to-get-to-alor",
+    "moreLabel": {
+     "en": "",
+     "id": ""
+    }
    },
    {
     "q": {
@@ -930,7 +938,11 @@ export const HOME_DEFAULTS: HomeContent = {
      "en": "March to November. July to September brings cooler water and the best chance of pelagics; March to May and October are calmer and warmer.",
      "id": "Maret sampai November. Juli sampai September airnya lebih dingin dan peluang ikan pelagis paling besar; Maret sampai Mei dan Oktober lebih tenang dan hangat."
     },
-    "page": ""
+    "page": "",
+    "moreLabel": {
+     "en": "",
+     "id": ""
+    }
    },
    {
     "q": {
@@ -941,7 +953,11 @@ export const HOME_DEFAULTS: HomeContent = {
      "en": "Not if we match the site to you. Many sites are calm and shallow. We only take divers to drift sites like Kal's Dream once we have seen them dive.",
      "id": "Tidak, karena kami pilihkan titik yang sesuai. Banyak titik yang tenang dan dangkal. Kami baru membawa penyelam ke titik drift seperti Kal's Dream setelah melihat cara mereka menyelam."
     },
-    "page": ""
+    "page": "",
+    "moreLabel": {
+     "en": "",
+     "id": ""
+    }
    },
    {
     "q": {
@@ -952,7 +968,11 @@ export const HOME_DEFAULTS: HomeContent = {
      "en": "Yes. Full gear rental is available, and Kanaloa and the resort both have a camera table with charging points.",
      "id": "Bisa. Sewa alat lengkap tersedia, dan kapal Kanaloa serta resor punya meja kamera dengan colokan listrik."
     },
-    "page": ""
+    "page": "",
+    "moreLabel": {
+     "en": "",
+     "id": ""
+    }
    },
    {
     "q": {
@@ -963,7 +983,11 @@ export const HOME_DEFAULTS: HomeContent = {
      "en": "Send an enquiry or message us on WhatsApp. We confirm your dates, then you pay a deposit online to hold your place.",
      "id": "Kirim permintaan atau chat kami di WhatsApp. Kami konfirmasi tanggal Anda, lalu Anda bayar DP online untuk mengunci tempat."
     },
-    "page": ""
+    "page": "",
+    "moreLabel": {
+     "en": "",
+     "id": ""
+    }
    }
   ],
   "help": {

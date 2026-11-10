@@ -1,7 +1,6 @@
 "use client";
 
 import { useItemHref } from "@/lib/i18n";
-import Link from "@/components/LocalLink";
 import { useRef, useState } from "react";
 import { SiteFooter } from "@/components/SiteFooter";
 import { SiteHeader } from "@/components/SiteHeader";
@@ -453,10 +452,11 @@ function Faq({ c, h, pages }: { c: HomeContent; h: Helpers; pages: NonNullable<P
             <h3>{L(f.q)}</h3>
             <p>{L(f.a)}</p>
             {f.page && pages[f.page] && (
-              <Link href={itemHref("faqs", pages[f.page])} className="home-faq__more">
-                {t("Read the full answer")}
-                <Icon name="arrow-right" size={16} />
-              </Link>
+              <div className="home-faq__more">
+                <ButtonLink href={itemHref("faqs", pages[f.page])} variant="text" size="large" icon="arrow-right" iconPosition="suffix">
+                  {L(f.moreLabel) || L(c.faq.moreLabel) || t("Read the full answer")}
+                </ButtonLink>
+              </div>
             )}
           </div>
         ))}

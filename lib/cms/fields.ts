@@ -74,7 +74,8 @@ function fieldSchema(f: Field): z.ZodTypeAny {
     case "url":
       return z.union([z.literal(""), z.string().trim().max(500).refine((v) => /^(https?:\/\/|\/|#|mailto:)/.test(v), "Use a full URL, a path starting with /, or #anchor")]);
     case "i18n":
-      return i18nSchema(f);
+      // Optional texts added to existing content later are simply missing in older content.
+      return f.required ? i18nSchema(f) : i18nSchema(f).optional().transform((v) => v ?? { en: "", id: "" });
     case "richtext": {
       const s = z.string().max(f.max ?? 200_000, "This text is too long");
       const en = f.required ? s.refine((v) => richText(v).trim().length > 0, "English text is required") : s;
