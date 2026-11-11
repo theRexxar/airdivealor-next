@@ -1,6 +1,7 @@
 /* CMS admin screens. Built on the site's design tokens and design-system components. */
 .cms { min-height: 100vh; background: var(--bg-secondary); color: var(--text-default); font-family: var(--font-roboto); }
-.cms a { color: var(--text-primary); }
+/* Text links are blue; button links (.tw-btn) keep their button colours (white on a primary button). */
+.cms a:not(.tw-btn) { color: var(--text-primary); }
 .cms h1, .cms h2, .cms h3 { margin: 0; }
 
 /* Sign-in screens */
