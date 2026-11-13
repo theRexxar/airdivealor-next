@@ -77,10 +77,7 @@ function layout(o: Layout): { html: string; text: string } {
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${C.bg}"><tr><td align="center" style="padding:32px 12px">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background:#ffffff;border:1px solid ${C.line};border-radius:10px;overflow:hidden">
 <tr><td style="background:${C.dark};padding:20px 28px">
-<table role="presentation" cellpadding="0" cellspacing="0"><tr>
-<td style="padding-right:12px"><img src="${esc(site)}/brand/logo-mark-white.png" alt="Air Dive Alor" width="48" height="30" style="display:block;width:48px;height:30px;border:0"></td>
-<td style="font:600 18px/1 Georgia,'Times New Roman',serif;color:#ffffff;white-space:nowrap">Air Dive Alor</td>
-</tr></table>
+<img src="${esc(site)}/brand/logo-air-dive-alor-white@2x.png" alt="Air Dive Alor" width="60" height="54" style="display:block;width:60px;height:54px;border:0">
 </td></tr>
 ${
   o.only

@@ -12,7 +12,7 @@ export function SiteFooter() {
       <div className="site-footer__grid">
         <div className="site-footer__brand">
           <Link href={ROUTES.home} aria-label="Air Dive Alor, home" className="site-footer__logo">
-            <img src="/brand/logo-full-white.png" alt="Air Dive Alor" width={79} height={72} />
+            <img src="/brand/logo-air-dive-alor-white.png" srcSet="/brand/logo-air-dive-alor-white.png 600w, /brand/logo-air-dive-alor-white@2x.png 1200w" sizes="98px" alt="Air Dive Alor" width={98} height={88} />
           </Link>
           <p className="site-footer__address">{t("Alor Kecil, Alor Barat Laut, Alor Regency, East Nusa Tenggara, Indonesia")}</p>
           <div className="site-footer__contact">
