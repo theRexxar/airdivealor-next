@@ -5,6 +5,8 @@ import type { Metadata } from "next";
  * 16 and 32 px, the 180 px Apple touch icon and the web app manifest with the 192 and 512 px icons.
  * The white logo sits on a dark #202020 tile so it shows in light and dark browser tabs; tab icons
  * have rounded corners, the Apple and Android icons are square because the system rounds them.
+ * At 16 and 32 px (PNGs and the matching sizes inside favicon.ico) only the mark is shown: the
+ * "air / dive alor" wordmark is unreadable that small.
  */
 export const SITE_ICONS: Metadata["icons"] = {
   icon: [
