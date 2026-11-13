@@ -1,7 +1,8 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
 import { DEFAULT_SHARE_IMAGE } from "@/lib/cms/seo";
+import { SITE_ICONS, SITE_MANIFEST } from "@/lib/icons";
 import { LangProvider } from "@/lib/i18n";
 import { isLocale } from "@/lib/i18n-routes";
 import { env } from "@/lib/server/env";
@@ -15,12 +16,16 @@ export const metadata: Metadata = {
   title: "Air Dive Alor",
   description: "Dive center in Alor Kecil, East Nusa Tenggara, Indonesia: fun dives, SDI and TDI courses, and stays in the village.",
   applicationName: "Air Dive Alor",
-  icons: { icon: "/brand/logo-mark-white.png", apple: "/brand/logo-mark-white.png" },
+  icons: SITE_ICONS,
+  manifest: SITE_MANIFEST,
   openGraph: { siteName: "Air Dive Alor", type: "website", images: [DEFAULT_SHARE_IMAGE] },
   twitter: { card: "summary_large_image" },
   robots: { index: true, follow: true, googleBot: { index: true, follow: true, "max-image-preview": "large", "max-snippet": -1, "max-video-preview": -1 } },
   formatDetection: { telephone: false, email: false, address: false },
 };
+
+/** Browser UI colour on phones: the dark brand colour of the header. */
+export const viewport: Viewport = { themeColor: "#202020" };
 
 /** Root layout of the public website: /en/... and /id/... */
 export default async function SiteLayout({ children, params }: { children: ReactNode; params: Promise<{ lang: string }> }) {
