@@ -164,3 +164,47 @@ export const cmsSettings = mysqlTable("cms_settings", {
   value: json("value").$type<unknown>().notNull(),
   updatedAt: timestamps.updatedAt,
 });
+
+/* ---------- Booking enquiries (Home page form) ---------- */
+
+/** What happened to one email of an enquiry. */
+export type EmailStatus = "pending" | "sent" | "failed" | "not_configured";
+const emailStatus = (name: string) => mysqlEnum(name, ["pending", "sent", "failed", "not_configured"]).notNull().default("pending");
+
+export const enquiries = mysqlTable("enquiries", {
+  id: int("id").autoincrement().primaryKey(),
+  /** Where the team is with it: new → contacted → confirmed, or cancelled. */
+  status: mysqlEnum("status", ["new", "contacted", "confirmed", "cancelled"]).notNull().default("new"),
+  lang: mysqlEnum("lang", ["en", "id"]).notNull(),
+  currency: mysqlEnum("currency", ["IDR", "USD"]).notNull(),
+  packageId: varchar("package_id", { length: 60 }).notNull(),
+  /** The package name and price when the enquiry was sent (prices can change later). */
+  packageName: json("package_name").$type<{ en: string; id: string }>().notNull(),
+  priceIdr: int("price_idr").notNull(),
+  usdRate: int("usd_rate").notNull().default(0),
+  depositPercent: int("deposit_percent").notNull(),
+  /** YYYY-MM-DD */
+  arrival: varchar("arrival", { length: 10 }).notNull(),
+  divers: int("divers").notNull(),
+  cert: varchar("cert", { length: 40 }).notNull(),
+  camera: boolean("camera").notNull().default(false),
+  name: varchar("name", { length: 100 }).notNull(),
+  email: varchar("email", { length: 200 }).notNull(),
+  phone: varchar("phone", { length: 30 }).notNull().default(""),
+  message: text("message").notNull(),
+  /** Notes for the team only. */
+  notes: text("notes").notNull(),
+  ip: varchar("ip", { length: 64 }),
+  userAgent: varchar("user_agent", { length: 255 }),
+  teamEmail: emailStatus("team_email"),
+  teamEmailTo: varchar("team_email_to", { length: 200 }).notNull().default(""),
+  teamEmailId: varchar("team_email_id", { length: 200 }),
+  teamEmailError: varchar("team_email_error", { length: 500 }),
+  teamEmailAt: datetime("team_email_at", { mode: "date" }),
+  customerEmail: emailStatus("customer_email"),
+  customerEmailId: varchar("customer_email_id", { length: 200 }),
+  customerEmailError: varchar("customer_email_error", { length: 500 }),
+  customerEmailAt: datetime("customer_email_at", { mode: "date" }),
+  updatedBy: int("updated_by").references(() => users.id, { onDelete: "set null" }),
+  ...timestamps,
+}, (t) => [index("enquiries_created_idx").on(t.createdAt), index("enquiries_status_idx").on(t.status)]);

@@ -19,6 +19,7 @@ const LABELS: Record<string, string> = {
   "page.draft_saved": "Saved page draft", "page.draft_discarded": "Discarded page draft", "page.published": "Published page", "page.layout_changed": "Changed section order",
   "item.created": "Created item", "item.draft_saved": "Saved item draft", "item.draft_discarded": "Discarded item draft", "item.published": "Published item",
   "item.unpublished": "Unpublished item", "item.hidden": "Hid item", "item.shown": "Showed item", "item.reordered": "Reordered items", "item.deleted": "Deleted item",
+  "enquiry.status_changed": "Changed enquiry status", "enquiry.notes_saved": "Saved enquiry notes", "enquiry.email_resent": "Resent enquiry email", "enquiry.deleted": "Deleted enquiry",
   "media.upload_started": "Started upload", "media.uploaded": "Uploaded file", "media.updated": "Edited file", "media.deleted": "Deleted file",
 };
 

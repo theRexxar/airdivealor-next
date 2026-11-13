@@ -5,7 +5,7 @@ import { useRef, useState } from "react";
 import { SiteFooter } from "@/components/SiteFooter";
 import { SiteHeader } from "@/components/SiteHeader";
 import { Alert, AvatarWithText, Button, ButtonLink, Eyebrow, Icon, Input, Rating, Select, Tag, Textarea, asIcon } from "@/components/ui";
-import { CERTS, MAX_DIVERS, checkEnquiry, isoToday, type EnquiryField } from "@/lib/enquiry";
+import { CERTS, MAX_DIVERS, checkEnquiry, enquiryWhatsAppText, isoToday, type EnquiryField } from "@/lib/enquiry";
 import type { I18n } from "@/lib/cms/fields";
 import type { HomeContent, PublishedHome } from "@/lib/cms/home-types";
 import { useContent, type ContentHelpers } from "@/lib/cms/use-content";
@@ -541,6 +541,7 @@ function Book({ c, h, b }: { c: HomeContent; h: Helpers; b: Booking }) {
   const [sending, setSending] = useState(false);
   const [sendError, setSendError] = useState("");
   const [copyTo, setCopyTo] = useState<string | null>(null);
+  const [ref, setRef] = useState<number | null>(null);
   const pk = c.prices.packages.find((p) => p.id === b.pkg) ?? c.prices.packages[0];
   const nDiv = Math.max(1, parseInt(divers) || 1);
   const dep = bk.depositPercent / 100;
@@ -559,6 +560,22 @@ function Book({ c, h, b }: { c: HomeContent; h: Helpers; b: Booking }) {
     setSendError("");
     b.setStep(3);
   };
+  /** WhatsApp with the trip, dates and group already written, so the visitor doesn't type them again. */
+  const waSummary = (withRef: boolean) =>
+    waLink(
+      enquiryWhatsAppText(h.lang === "ID" ? "id" : "en", {
+        ref: withRef ? ref : null,
+        trip: pk ? L(pk.name) : "",
+        arrival: date,
+        divers: nDiv,
+        cert,
+        camera: cam === "Yes",
+        name: name.trim(),
+        email: email.trim(),
+        phone: phone.trim(),
+        message,
+      }),
+    );
   const send = async () => {
     setSending(true);
     setSendError("");
@@ -571,6 +588,7 @@ function Book({ c, h, b }: { c: HomeContent; h: Helpers; b: Booking }) {
       const j = await res.json().catch(() => ({}));
       if (res.ok) {
         setCopyTo(j.copySent ? email.trim() : "");
+        setRef(typeof j.ref === "number" ? j.ref : null);
         b.setSent(true);
         return;
       }
@@ -690,7 +708,7 @@ function Book({ c, h, b }: { c: HomeContent; h: Helpers; b: Booking }) {
                 {L(bk.depositNote) && <Alert>{L(bk.depositNote)}</Alert>}
                 {sendError && (
                   <Alert type="error" description={
-                    <ButtonLink href={waLink()} external variant="text" icon="message-circle">
+                    <ButtonLink href={waSummary(false)} external variant="text" icon="message-circle">
                       {t("Chat on WhatsApp")}
                     </ButtonLink>
                   }>
@@ -718,6 +736,7 @@ function Book({ c, h, b }: { c: HomeContent; h: Helpers; b: Booking }) {
                   type="success"
                   description={
                     <>
+                      {ref ? <>{t("Your enquiry number is #{ref}.").replace("{ref}", String(ref))} </> : null}
                       {L(bk.successText)}
                       {copyTo ? <> {t("We sent a copy to {email}.").replace("{email}", copyTo)}</> : copyTo === "" ? <> {t("We couldn't email you a copy, but your enquiry reached us.")}</> : null}
                     </>
@@ -726,7 +745,7 @@ function Book({ c, h, b }: { c: HomeContent; h: Helpers; b: Booking }) {
                   {L(bk.successTitle)}
                 </Alert>
                 <div className="home-form__sent">
-                  <ButtonLink href={waLink()} external variant="secondary" size="large" icon="message-circle">
+                  <ButtonLink href={waSummary(true)} external variant="secondary" size="large" icon="message-circle">
                     {t("Chat on WhatsApp")}
                   </ButtonLink>
                   <Button
@@ -736,6 +755,7 @@ function Book({ c, h, b }: { c: HomeContent; h: Helpers; b: Booking }) {
                       b.setSent(false);
                       b.setStep(1);
                       setCopyTo(null);
+                      setRef(null);
                       setMessage("");
                     }}
                   >
