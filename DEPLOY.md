@@ -107,6 +107,10 @@ Before `media.airdivealor.com` is live, you can test with MinIO's Railway domain
 
 The booking form saves every enquiry in the database and shows it in **CMS › Bookings › Enquiries**, with whether each email went out. The new table is created by `npm run db:migrate` on deploy. Run `npm run cms:seed` once afterwards so the Editor role gets the new "See booking enquiries" and "Change status, add notes and resend emails" permissions (Super admins have them already; other roles can be given them in *Roles and permissions*).
 
+### Media folders
+
+`npm run db:migrate` (run on every deploy) creates the folder table. Existing files stay at the top of the library until someone moves them into folders. Run `npm run cms:seed` once so the Editor role gets "Create, rename, move and delete folders".
+
 ### Language addresses
 
 The site's pages are under `/en/...` and `/id/...`. Every old address without a language (`/dive-sites/kals-dream`, `/blog/kanaloa`) redirects to the English page (308), so links and search results that point at the new site keep working. After the move, submit `https://airdivealor.com/sitemap.xml` in Google Search Console: it lists both languages.

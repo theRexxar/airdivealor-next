@@ -3,6 +3,7 @@ import { z } from "zod";
 import { audit } from "@/lib/server/audit";
 import { db, schema } from "@/lib/server/db";
 import { body, handle, HttpError, ok, requireUser } from "@/lib/server/http";
+import { moveMedia } from "@/lib/server/media-folders";
 import { serializeMedia } from "@/lib/server/media-service";
 import { deleteObjects } from "@/lib/server/storage";
 import { PAGES } from "@/lib/cms/registry";
@@ -21,12 +22,13 @@ export const GET = handle(async (_req, ctx: Ctx) => {
   return ok(serializeMedia(await findMedia(ctx)));
 });
 
-/** Edit the alt text (both languages). */
+/** Edit the alt text (both languages) and/or the folder. */
 export const PATCH = handle(async (req, ctx: Ctx) => {
   const me = await requireUser("media.upload");
   const m = await findMedia(ctx);
-  const { alt } = await body(req, z.object({ alt: z.object({ en: z.string().trim().max(255), id: z.string().trim().max(255) }) }));
-  await db.update(schema.media).set({ altEn: alt.en, altId: alt.id }).where(eq(schema.media.id, m.id));
+  const { alt, folderId } = await body(req, z.object({ alt: z.object({ en: z.string().trim().max(255), id: z.string().trim().max(255) }).optional(), folderId: z.number().int().positive().nullable().optional() }));
+  if (folderId !== undefined && folderId !== m.folderId) await moveMedia([m.id], folderId);
+  if (alt) await db.update(schema.media).set({ altEn: alt.en, altId: alt.id }).where(eq(schema.media.id, m.id));
   await audit(me.id, "media.updated", m.originalName, { id: m.id });
   return ok({ ok: true });
 });

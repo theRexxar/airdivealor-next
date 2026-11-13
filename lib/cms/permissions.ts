@@ -33,6 +33,7 @@ export const PERMISSIONS: PermissionDef[] = [
   { key: "media.view", label: "See the media library", group: "Media" },
   { key: "media.upload", label: "Upload photos and videos", group: "Media" },
   { key: "media.delete", label: "Delete media", group: "Media" },
+  { key: "media.folders", label: "Create, rename, move and delete folders", group: "Media" },
   { key: "users.view", label: "See users", group: "Users and roles" },
   { key: "users.manage", label: "Invite, edit and disable users", group: "Users and roles" },
   { key: "roles.manage", label: "Create and edit roles", group: "Users and roles" },
@@ -48,7 +49,7 @@ const isPublishing = (k: string) => k.endsWith(".publish") || k.endsWith(".layou
 /** Roles created by the seed. Super admin always has every permission. */
 export const DEFAULT_ROLES: { name: string; description: string; system?: boolean; permissions: string[] | "all" }[] = [
   { name: "Super admin", description: "Full access, including users and roles.", system: true, permissions: "all" },
-  { name: "Editor", description: "Edits and publishes all pages and dive site guides, manages media, and handles booking enquiries.", permissions: [...contentKeys, "media.view", "media.upload", "enquiries.view", "enquiries.manage"] },
+  { name: "Editor", description: "Edits and publishes all pages and dive site guides, manages media, and handles booking enquiries.", permissions: [...contentKeys, "media.view", "media.upload", "media.folders", "enquiries.view", "enquiries.manage"] },
   { name: "Contributor", description: "Edits drafts and uploads media; cannot publish.", permissions: [...contentKeys.filter((k) => !isPublishing(k)), "media.view", "media.upload"] },
   { name: "Viewer", description: "Read-only access to the CMS.", permissions: [...PAGES.map((p) => `${p.slug}.view`), ...COLLECTIONS.map((c) => `${c.key}.view`), "media.view"] },
 ];
