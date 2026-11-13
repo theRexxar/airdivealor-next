@@ -2,8 +2,9 @@ import type { Metadata } from "next";
 
 /**
  * Favicons for the website and the CMS: favicon.ico (16, 32 and 48 px) for every browser, PNGs at
- * 16 and 32 px, the 180 px Apple touch icon (on the dark brand background, since iOS needs an
- * opaque icon) and the web app manifest with the 192 and 512 px icons.
+ * 16 and 32 px, the 180 px Apple touch icon and the web app manifest with the 192 and 512 px icons.
+ * The white logo sits on a dark #202020 tile so it shows in light and dark browser tabs; tab icons
+ * have rounded corners, the Apple and Android icons are square because the system rounds them.
  */
 export const SITE_ICONS: Metadata["icons"] = {
   icon: [
