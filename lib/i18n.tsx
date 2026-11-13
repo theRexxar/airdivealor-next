@@ -43,6 +43,7 @@ const EXTRA: Record<string, string> = {
   Contact: "Kontak",
   "Sending…": "Mengirim…",
   "We sent a copy to {email}.": "Kami sudah kirim salinannya ke {email}.",
+  "Your enquiry number is #{ref}.": "Nomor permintaan Anda #{ref}.",
   "We couldn't email you a copy, but your enquiry reached us.": "Salinan belum bisa kami kirim ke email Anda, tetapi permintaan Anda sudah kami terima.",
   "Choose your arrival date.": "Pilih tanggal tiba Anda.",
   "The arrival date can't be in the past.": "Tanggal tiba tidak boleh sebelum hari ini.",

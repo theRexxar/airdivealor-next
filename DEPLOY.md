@@ -103,6 +103,10 @@ Before `media.airdivealor.com` is live, you can test with MinIO's Railway domain
 5. Update `MINIO_API_CORS_ALLOW_ORIGIN` to `https://airdivealor.com` if you changed it for testing, and confirm `SITE_URL`, `S3_UPLOAD_ENDPOINT` and `S3_PUBLIC_URL` use the real domains.
 6. When the certificates show as issued in Railway, check the site, the CMS sign-in, an upload, and a password-reset email.
 
+### Booking enquiries
+
+The booking form saves every enquiry in the database and shows it in **CMS › Bookings › Enquiries**, with whether each email went out. The new table is created by `npm run db:migrate` on deploy. Run `npm run cms:seed` once afterwards so the Editor role gets the new "See booking enquiries" and "Change status, add notes and resend emails" permissions (Super admins have them already; other roles can be given them in *Roles and permissions*).
+
 ### Language addresses
 
 The site's pages are under `/en/...` and `/id/...`. Every old address without a language (`/dive-sites/kals-dream`, `/blog/kanaloa`) redirects to the English page (308), so links and search results that point at the new site keep working. After the move, submit `https://airdivealor.com/sitemap.xml` in Google Search Console: it lists both languages.

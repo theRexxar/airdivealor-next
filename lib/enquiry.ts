@@ -57,3 +57,41 @@ export function checkEnquiry(e: Pick<Enquiry, EnquiryField>, today = isoToday())
   if (e.message.length > MAX_MESSAGE) out.message = `Keep the message under ${MAX_MESSAGE} characters.`;
   return out;
 }
+
+const CERT_ID: Record<string, string> = {
+  "Not certified yet": "Belum bersertifikat",
+  "Open Water": "Open Water",
+  Advanced: "Advanced",
+  "Rescue or higher": "Rescue atau lebih tinggi",
+  "Dive professional": "Profesional selam",
+};
+
+/** "Tue, 10 Nov 2026" / "Sel, 10 Nov 2026" */
+export function arrivalText(iso: string, lang: "en" | "id") {
+  const [y, m, d] = iso.split("-").map(Number);
+  if (!y || !m || !d) return iso;
+  return new Intl.DateTimeFormat(lang === "en" ? "en-GB" : "id-ID", { weekday: "short", day: "numeric", month: "short", year: "numeric", timeZone: "UTC" }).format(new Date(Date.UTC(y, m - 1, d)));
+}
+
+/**
+ * The WhatsApp message a visitor sends after the form: the trip, dates and group, so nobody has to type
+ * them again. In the visitor's language; `ref` is the enquiry number when it was saved.
+ */
+export function enquiryWhatsAppText(lang: "en" | "id", e: { ref?: number | null; trip: string; arrival: string; divers: number; cert: string; camera: boolean; name: string; email: string; phone: string; message: string }) {
+  const en = lang === "en";
+  const lines = [
+    en
+      ? `Hi Air Dive Alor, I just sent an enquiry from your website${e.ref ? ` (#${e.ref})` : ""}:`
+      : `Halo Air Dive Alor, saya baru saja mengirim permintaan dari website${e.ref ? ` (#${e.ref})` : ""}:`,
+    "",
+    `${en ? "Trip" : "Paket"}: ${e.trip}`,
+    `${en ? "Arrival" : "Tiba"}: ${arrivalText(e.arrival, lang)}`,
+    `${en ? "Divers" : "Penyelam"}: ${e.divers} · ${en ? e.cert : (CERT_ID[e.cert] ?? e.cert)}`,
+    `${en ? "Camera" : "Kamera"}: ${e.camera ? (en ? "Yes" : "Ya") : en ? "No" : "Tidak"}`,
+    `${en ? "Name" : "Nama"}: ${e.name}`,
+    `Email: ${e.email}`,
+    ...(e.phone ? [`WhatsApp: ${e.phone}`] : []),
+    ...(e.message.trim() ? ["", `${en ? "Message" : "Pesan"}: ${e.message.trim()}`] : []),
+  ];
+  return lines.join("\n");
+}

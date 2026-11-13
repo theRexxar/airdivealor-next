@@ -27,6 +27,9 @@ export const PERMISSIONS: PermissionDef[] = [
     { key: `${c.key}.publish`, label: `Publish, hide, unpublish and reorder ${c.itemLabel}s`, group: c.label },
     { key: `${c.key}.delete`, label: `Delete ${c.itemLabel}s`, group: c.label },
   ]),
+  { key: "enquiries.view", label: "See booking enquiries (names, emails, phone numbers)", group: "Enquiries" },
+  { key: "enquiries.manage", label: "Change status, add notes and resend emails", group: "Enquiries" },
+  { key: "enquiries.delete", label: "Delete enquiries", group: "Enquiries" },
   { key: "media.view", label: "See the media library", group: "Media" },
   { key: "media.upload", label: "Upload photos and videos", group: "Media" },
   { key: "media.delete", label: "Delete media", group: "Media" },
@@ -45,7 +48,7 @@ const isPublishing = (k: string) => k.endsWith(".publish") || k.endsWith(".layou
 /** Roles created by the seed. Super admin always has every permission. */
 export const DEFAULT_ROLES: { name: string; description: string; system?: boolean; permissions: string[] | "all" }[] = [
   { name: "Super admin", description: "Full access, including users and roles.", system: true, permissions: "all" },
-  { name: "Editor", description: "Edits and publishes all pages and dive site guides, and manages media.", permissions: [...contentKeys, "media.view", "media.upload"] },
+  { name: "Editor", description: "Edits and publishes all pages and dive site guides, manages media, and handles booking enquiries.", permissions: [...contentKeys, "media.view", "media.upload", "enquiries.view", "enquiries.manage"] },
   { name: "Contributor", description: "Edits drafts and uploads media; cannot publish.", permissions: [...contentKeys.filter((k) => !isPublishing(k)), "media.view", "media.upload"] },
   { name: "Viewer", description: "Read-only access to the CMS.", permissions: [...PAGES.map((p) => `${p.slug}.view`), ...COLLECTIONS.map((c) => `${c.key}.view`), "media.view"] },
 ];

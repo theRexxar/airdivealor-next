@@ -268,6 +268,10 @@ export interface EnquiryEmailData {
   estimateIdr: string;
   message: string;
   whatsappNumber: string;
+  /** The enquiry in the CMS (team email only). */
+  cmsUrl?: string;
+  /** Enquiry number, shown in the subject. */
+  ref?: number;
 }
 
 const CERT_ID: Record<string, string> = {
@@ -365,7 +369,7 @@ export function enquiryAdminEmail(d: EnquiryEmailData): Email {
     ["Message", d.message || "None"],
   ];
   return {
-    subject: `New enquiry: ${d.trip.en}, ${dateLabelLong(d.arrival, "en")}, ${diversLabel(d.divers, "en")} (${d.name})`,
+    subject: `New enquiry${d.ref ? ` #${d.ref}` : ""}: ${d.trip.en}, ${dateLabelLong(d.arrival, "en")}, ${diversLabel(d.divers, "en")} (${d.name})`,
     ...layout({
       siteUrl: d.siteUrl,
       only: "en",
@@ -375,6 +379,7 @@ export function enquiryAdminEmail(d: EnquiryEmailData): Email {
         title: "New booking enquiry",
         paragraphs: [`**${d.name}** sent an enquiry from the website on ${witaTime(d.when)}. Reply to this email to answer them by email; the customer also received a copy.`],
         rows,
+        after: d.cmsUrl ? [`It is saved in the CMS (Enquiries), where you can mark it as contacted or confirmed and keep notes: ${d.cmsUrl}`] : [],
         button: phoneDigits ? "Reply on WhatsApp" : "Reply by email",
       },
       id: { title: "", paragraphs: [] },
@@ -400,6 +405,8 @@ const SAMPLE_ENQUIRY = (siteUrl: string, lang: "en" | "id"): EnquiryEmailData =>
   estimateIdr: "Rp 9.800.000 × 2 = Rp 19.600.000",
   message: "We'd love to see pygmy seahorses.\nCan you pick us up at 10:30?",
   whatsappNumber: "6281395505313",
+  ref: 128,
+  cmsUrl: `${siteUrl.replace(/\/$/, "")}/cms/enquiries/128`,
 });
 
 /** Templates with sample data, for the preview in CMS › Email. */
