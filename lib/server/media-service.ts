@@ -25,6 +25,7 @@ export function serializeMedia(m: MediaRow) {
     posterUrl: m.posterKey ? publicUrl(m.posterKey) : null,
     variants: variants.map((v) => ({ ...v, url: publicUrl(v.key) })),
     alt: { en: m.altEn, id: m.altId },
+    folderId: m.folderId ?? null,
     error: m.error,
     createdAt: m.createdAt,
   };

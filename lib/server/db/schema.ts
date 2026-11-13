@@ -1,5 +1,5 @@
 import { relations } from "drizzle-orm";
-import { bigint, boolean, datetime, index, int, json, mysqlEnum, mysqlTable, primaryKey, uniqueIndex, varchar, text } from "drizzle-orm/mysql-core";
+import { bigint, boolean, datetime, index, int, json, mysqlEnum, mysqlTable, primaryKey, uniqueIndex, varchar, text, type AnyMySqlColumn } from "drizzle-orm/mysql-core";
 
 const timestamps = {
   createdAt: datetime("created_at", { mode: "date" }).notNull().$defaultFn(() => new Date()),
@@ -68,6 +68,15 @@ export interface MediaVariant {
   size: number;
 }
 
+/** Folders in the media library; a folder without a parent sits at the top. Files keep their URLs when moved. */
+export const mediaFolders = mysqlTable("media_folders", {
+  id: int("id").autoincrement().primaryKey(),
+  name: varchar("name", { length: 80 }).notNull(),
+  parentId: int("parent_id").references((): AnyMySqlColumn => mediaFolders.id, { onDelete: "restrict" }),
+  createdBy: int("created_by").references(() => users.id, { onDelete: "set null" }),
+  ...timestamps,
+}, (t) => [index("media_folders_parent_idx").on(t.parentId)]);
+
 export const media = mysqlTable("media", {
   id: int("id").autoincrement().primaryKey(),
   kind: mysqlEnum("kind", ["image", "video"]).notNull(),
@@ -88,8 +97,10 @@ export const media = mysqlTable("media", {
   error: text("error"),
   attempts: int("attempts").notNull().default(0),
   createdBy: int("created_by").references(() => users.id, { onDelete: "set null" }),
+  /** The folder it's filed in; null = the top of the library. A deleted folder's files land here. */
+  folderId: int("folder_id").references(() => mediaFolders.id, { onDelete: "set null" }),
   ...timestamps,
-}, (t) => [index("media_status_idx").on(t.status)]);
+}, (t) => [index("media_status_idx").on(t.status), index("media_folder_idx").on(t.folderId)]);
 
 /* ---------- Pages and sections ---------- */
 
