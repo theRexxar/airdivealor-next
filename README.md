@@ -144,6 +144,14 @@ In production, run `npm run build && npm start` for the app and `npm run worker`
 
 **Website connection:** `app/page.tsx`, `app/dive-sites/page.tsx`, `app/dive-sites/[slug]/page.tsx`, `app/facilities-and-rates/page.tsx`, `app/dive-courses/page.tsx`, `app/dive-courses/[id]/page.tsx`, `app/about-us/page.tsx`, `app/blog/page.tsx`, `app/blog/[slug]/page.tsx`, `app/faq/page.tsx` and `app/faq/[slug]/page.tsx` (all under `app/[lang]/`) fetch the public API. Responses are cached for 5 minutes and refreshed the moment someone publishes. If the CMS can't be reached, the pages fall back to the built-in content in `lib/cms/home-defaults.ts`, `lib/cms/dive-sites-defaults.ts`, `lib/cms/facilities-defaults.ts`, `lib/cms/courses-defaults.ts`, `lib/cms/about-defaults.ts`, `lib/cms/blog-defaults.ts` and `lib/cms/faq-defaults.ts`. Set `CMS_API_URL` if the API runs somewhere else.
 
+**Media folders:** the media library has folders and subfolders (up to 5 levels), in `media_folders`; each file has an optional `folder_id`.
+- **Media page:** a folder tree on the left, a breadcrumb, subfolders as tiles above the files, and the files directly in the open folder. Search looks in every folder and shows each result's folder. Uploads go into the open folder.
+- **Folders** can be created, renamed, moved (with everything in them) and deleted, each through a prompt that says what changes. Names are unique within a folder (ignoring case), and a folder can't move into itself or its own subfolders.
+- **Deleting a folder** needs its name typed in. It also deletes its subfolders, and every file inside moves to the top of the library: files are never deleted this way.
+- **Files** move by selecting them (checkbox on each tile, then "Move to folder…") or in a file's details (Folder). A file's web address doesn't depend on its folder, so moving files or changing folders never changes a page.
+- **The pickers** in the editors (photo fields and the rich text editor) browse the same folders, without the folder actions.
+- **Permissions:** "Create, rename, move and delete folders" (Editors and Super admins). Moving files needs "Upload photos and videos". Folder changes go into the activity log.
+
 **Uploads (asynchronous):**
 1. The browser registers the file and gets a presigned URL.
 2. It uploads straight to MinIO (`originals/`, private).
