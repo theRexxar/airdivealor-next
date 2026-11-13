@@ -1,0 +1,12 @@
+{
+  "name": "Air Dive Alor",
+  "short_name": "Air Dive Alor",
+  "start_url": "/en",
+  "display": "browser",
+  "background_color": "#202020",
+  "theme_color": "#202020",
+  "icons": [
+    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}
