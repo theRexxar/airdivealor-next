@@ -42,7 +42,7 @@ export function Shell({ children }: { children: ReactNode }) {
       </div>
       <aside className="cms-side" data-open={open || undefined} onClick={(e) => (e.target as HTMLElement).closest("a") && setOpen(false)}>
         <div className="cms-side__brand">
-          <img src="/brand/logo-mark-white.png" alt="Air Dive Alor" />
+          <img src="/brand/logo-air-dive-alor-white.png" srcSet="/brand/logo-air-dive-alor-white.png 600w, /brand/logo-air-dive-alor-white@2x.png 1200w" sizes="54px" alt="Air Dive Alor" />
           <span>Content management</span>
         </div>
         {NAV.map((g) => {

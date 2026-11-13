@@ -47,7 +47,7 @@ export function SiteHeader({ current }: { current?: Current }) {
   return (
     <header data-theme="dark" className="site-header">
       <Link href={ROUTES.home} aria-label="Air Dive Alor, home" className="site-header__logo">
-        <img src="/brand/logo-mark-white.png" alt="Air Dive Alor" width={58} height={36} />
+        <img src="/brand/logo-air-dive-alor-white.png" srcSet="/brand/logo-air-dive-alor-white.png 600w, /brand/logo-air-dive-alor-white@2x.png 1200w" sizes="54px" alt="Air Dive Alor" width={54} height={48} />
       </Link>
 
       <nav aria-label="Main" className="site-nav wide-only">

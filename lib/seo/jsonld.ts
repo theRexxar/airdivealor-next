@@ -78,7 +78,7 @@ export class Ld {
       name: BUSINESS.name,
       alternateName: BUSINESS.alternateName,
       url: this.url(pagePath(this.lang, "home")),
-      logo: { "@type": "ImageObject", url: this.url("/brand/logo-full-white.png") },
+      logo: { "@type": "ImageObject", url: this.url("/brand/logo-air-dive-alor-white@2x.png") },
       image: this.url("/latest/b-stay-shop.webp"),
       description: trim(description, 300),
       telephone: BUSINESS.telephone,
