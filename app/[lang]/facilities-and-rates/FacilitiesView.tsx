@@ -72,7 +72,7 @@ export function FacilitiesView({ data }: { data: PublishedFacilities }) {
 
   return (
     <div className="page">
-      <SiteHeader current="facilities" />
+      <SiteHeader />
       {blocks}
       {viewer && <PhotoViewer photos={viewer.photos} start={viewer.i} onClose={() => setViewer(null)} />}
       <SiteFooter />

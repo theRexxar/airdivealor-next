@@ -6,6 +6,7 @@ import type { PublishedFacilities } from "@/lib/cms/facilities-types";
 import type { HomeContent, PublishedHome } from "@/lib/cms/home-types";
 import { hasFaqPage, toFaqCard, type FaqContent, type FaqPageContent, type PublishedFaq, type PublishedFaqs } from "@/lib/cms/faq-types";
 import { collectMediaIds } from "@/lib/cms/fields";
+import type { PublishedMenus } from "@/lib/cms/menus";
 import { POST_FIELDS } from "@/lib/cms/post-fields";
 import { listItems, liveItems, requireCollection } from "./collection-service";
 import { HttpError } from "./http";
@@ -113,6 +114,10 @@ export async function publicPagePayload(slug: string, opts: Opts = {}) {
   if (slug === "blog") return blogPayload(opts);
   if (slug === "about-us") return (await plainPayload(slug, opts)) as unknown as PublishedAbout;
   if (slug === "facilities") return (await plainPayload(slug, opts)) as unknown as PublishedFacilities;
+  if (slug === "menus") {
+    const page = await pageContent(slug, opts);
+    return { content: page.content, publishedAt: page.publishedAt } as unknown as PublishedMenus;
+  }
   throw new HttpError(404, "Unknown page.");
 }
 

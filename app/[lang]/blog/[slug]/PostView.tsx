@@ -43,7 +43,7 @@ export function PostView({ data }: { data: PublishedPost }) {
 
   return (
     <div className="page">
-      <SiteHeader current="blog" />
+      <SiteHeader />
 
       <article>
         <section className="post-head">

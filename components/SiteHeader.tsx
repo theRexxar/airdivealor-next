@@ -1,24 +1,41 @@
 "use client";
 
 import Link from "@/components/LocalLink";
-import { useEffect, useRef, useState } from "react";
-import { useLang } from "@/lib/i18n";
+import { usePathname } from "next/navigation";
+import { Fragment, useEffect, useRef, useState, type ReactNode } from "react";
+import { tl } from "@/lib/cms/seo";
+import { useLocale } from "@/lib/i18n";
+import { localizeHref } from "@/lib/i18n-routes";
+import { isExternal, useMenus } from "@/lib/menus-context";
 import { LangSwitch } from "./LangSwitch";
 import { ROUTES, waLink } from "@/lib/site";
 import { ButtonLink, Button, Icon } from "./ui";
 
-type Current = "home" | "diveSites" | "about" | "blog" | "facilities" | "courses";
+/** A menu link: a page of this site in the current language, or another site in a new tab. */
+export function MenuLink({ href, children, ...rest }: { href: string; children: ReactNode; className?: string; "aria-current"?: "page" }) {
+  if (isExternal(href) || href.startsWith("mailto:"))
+    return (
+      <a href={href} {...(isExternal(href) ? { target: "_blank", rel: "noopener noreferrer" } : {})} {...rest}>
+        {children}
+      </a>
+    );
+  return (
+    <Link href={href || "/"} {...rest}>
+      {children}
+    </Link>
+  );
+}
 
-export function SiteHeader({ current }: { current?: Current }) {
-  const { t } = useLang();
+export function SiteHeader() {
   const [menuOpen, setMenuOpen] = useState(false);
-  const pricing = useRef<HTMLDetailsElement>(null);
+  const nav = useRef<HTMLElement>(null);
 
-  // Close the Pricing dropdown on an outside click or Escape.
+  // Close open dropdowns on an outside click or Escape.
   useEffect(() => {
     const close = (e: Event) => {
-      const d = pricing.current;
-      if (d?.open && !(e instanceof MouseEvent && d.contains(e.target as Node))) d.open = false;
+      nav.current?.querySelectorAll("details[open]").forEach((d) => {
+        if (!(e instanceof MouseEvent && d.contains(e.target as Node))) (d as HTMLDetailsElement).open = false;
+      });
     };
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
@@ -42,29 +59,45 @@ export function SiteHeader({ current }: { current?: Current }) {
     return () => mq.removeEventListener("change", onChange);
   }, []);
 
-  const cur = (k: Current) => (current === k ? { "aria-current": "page" as const } : {});
+  const { header } = useMenus();
+  const locale = useLocale();
+  const path = usePathname() ?? "";
+  // A menu link is current on its own page and the pages under it (a blog story for Blog).
+  const isCurrent = (href: string) => {
+    if (!href.startsWith("/") || href.includes("#")) return false;
+    const p = localizeHref(href, locale).split("?")[0].replace(/\/$/, "");
+    return path === p || (p !== `/${locale}` && path.startsWith(p + "/"));
+  };
+  const cur = (href: string) => (isCurrent(href) ? { "aria-current": "page" as const } : {});
+  const label = (v: { en: string; id: string }) => tl(v, locale);
+  // One dropdown open at a time.
+  const closeOthers = (open: HTMLDetailsElement) =>
+    nav.current?.querySelectorAll("details[open]").forEach((d) => d !== open && ((d as HTMLDetailsElement).open = false));
 
   return (
-    <header data-theme="dark" className="site-header">
+    <header id="site-header" data-theme="dark" className="site-header">
       <Link href={ROUTES.home} aria-label="Air Dive Alor, home" className="site-header__logo">
         <img src="/brand/logo-air-dive-alor-white.png" srcSet="/brand/logo-air-dive-alor-white.png 600w, /brand/logo-air-dive-alor-white@2x.png 1200w" sizes="54px" alt="Air Dive Alor" width={54} height={48} />
       </Link>
 
-      <nav aria-label="Main" className="site-nav wide-only">
-        <Link href={ROUTES.home} {...cur("home")}>{t("Home")}</Link>
-        <Link href={ROUTES.diveSites} {...cur("diveSites")}>{t("Dive sites")}</Link>
-        <details ref={pricing} className="site-nav__menu">
-          <summary {...(current === "facilities" || current === "courses" ? { "data-current": "" } : {})}>
-            <span className="site-nav__label">{t("Pricing")}</span>
-            <Icon name="chevron-down" size={14} />
-          </summary>
-          <div className="site-nav__dropdown">
-            <Link href={ROUTES.facilities} {...cur("facilities")}>{t("Facilities and rates")}</Link>
-            <Link href={ROUTES.courses} {...cur("courses")}>{t("Dive courses")}</Link>
-          </div>
-        </details>
-        <Link href={ROUTES.about} {...cur("about")}>{t("About us")}</Link>
-        <Link href={ROUTES.blog} {...cur("blog")}>{t("Blog")}</Link>
+      <nav ref={nav} aria-label="Main" className="site-nav wide-only">
+        {header.items.map((item, i) =>
+          item.children.length ? (
+            <details key={i} className="site-nav__menu" onToggle={(e) => (e.currentTarget.open ? closeOthers(e.currentTarget) : undefined)}>
+              <summary {...(item.children.some((c) => isCurrent(c.link)) ? { "data-current": "" } : {})}>
+                <span className="site-nav__label">{label(item.label)}</span>
+                <Icon name="chevron-down" size={14} />
+              </summary>
+              <div className="site-nav__dropdown">
+                {item.children.map((c, j) => (
+                  <MenuLink key={j} href={c.link} {...cur(c.link)}>{label(c.label)}</MenuLink>
+                ))}
+              </div>
+            </details>
+          ) : (
+            <MenuLink key={i} href={item.link} {...cur(item.link)}>{label(item.label)}</MenuLink>
+          ),
+        )}
       </nav>
 
       <div className="site-header__actions">
@@ -72,8 +105,8 @@ export function SiteHeader({ current }: { current?: Current }) {
         <span className="wide-only">
           <ButtonLink href={waLink()} external variant="secondary" icon="message-circle" iconOnly aria-label="WhatsApp" />
         </span>
-        <ButtonLink href={ROUTES.book} variant="primary">
-          {t("Book")}
+        <ButtonLink href={header.button.link || ROUTES.book} external={isExternal(header.button.link)} variant="primary">
+          {label(header.button.label)}
         </ButtonLink>
         <span className="narrow-only">
           <Button variant="secondary" icon={menuOpen ? "x" : "menu"} iconOnly aria-label="Menu" aria-expanded={menuOpen} onClick={() => setMenuOpen((o) => !o)} />
@@ -82,13 +115,20 @@ export function SiteHeader({ current }: { current?: Current }) {
 
       {menuOpen && (
         <nav aria-label="Main" className="mobile-nav narrow-only">
-          <Link href={ROUTES.home} {...cur("home")}>{t("Home")}</Link>
-          <Link href={ROUTES.diveSites} {...cur("diveSites")}>{t("Dive sites")}</Link>
-          <span className="mobile-nav__group">{t("Pricing")}</span>
-          <Link href={ROUTES.facilities} className="mobile-nav__sub" {...cur("facilities")}>{t("Facilities and rates")}</Link>
-          <Link href={ROUTES.courses} className="mobile-nav__sub mobile-nav__sub--last" {...cur("courses")}>{t("Dive courses")}</Link>
-          <Link href={ROUTES.about} {...cur("about")}>{t("About us")}</Link>
-          <Link href={ROUTES.blog} {...cur("blog")}>{t("Blog")}</Link>
+          {header.items.map((item, i) =>
+            item.children.length ? (
+              <Fragment key={i}>
+                <span className="mobile-nav__group">{label(item.label)}</span>
+                {item.children.map((c, j) => (
+                  <MenuLink key={j} href={c.link} className={j === item.children.length - 1 ? "mobile-nav__sub mobile-nav__sub--last" : "mobile-nav__sub"} {...cur(c.link)}>
+                    {label(c.label)}
+                  </MenuLink>
+                ))}
+              </Fragment>
+            ) : (
+              <MenuLink key={i} href={item.link} {...cur(item.link)}>{label(item.label)}</MenuLink>
+            ),
+          )}
           <a href={waLink()} target="_blank" rel="noopener noreferrer" className="mobile-nav__last">WhatsApp</a>
         </nav>
       )}

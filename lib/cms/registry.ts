@@ -12,6 +12,7 @@ import { FACILITIES_SECTIONS } from "./facilities-sections";
 import { FAQ_FIELDS } from "./faq-fields";
 import { FAQ_SECTIONS } from "./faq-sections";
 import { HOME_SECTIONS } from "./home-sections";
+import { MENUS_SECTIONS } from "./menus";
 import type { SectionDef } from "./sections";
 import { CATEGORY_FIELDS, POST_FIELDS } from "./post-fields";
 import { SITE_FIELDS } from "./site-fields";
@@ -26,6 +27,8 @@ export interface PageDef {
   sections: SectionDef[];
   /** Element id on the live page for each section (used by the preview to jump to it). */
   anchors?: Record<string, string>;
+  /** Not a page of its own but a part of every page (header and footer): not in the sitemap, listed under "Site" in the CMS. */
+  site?: boolean;
 }
 
 export interface CollectionDef {
@@ -63,6 +66,7 @@ export const PAGES: PageDef[] = [
   { slug: "about-us", label: "About us", href: "/about-us", icon: "info", sections: ABOUT_SECTIONS, anchors: { story: "story", name: "name", boats: "boats" } },
   { slug: "blog", label: "Blog", href: "/blog", icon: "newspaper", sections: BLOG_SECTIONS, anchors: { stories: "stories" } },
   { slug: "faq", label: "FAQ", href: "/faq", icon: "circle-help", sections: FAQ_SECTIONS, anchors: { list: "questions" } },
+  { slug: "menus", label: "Header and footer", href: "/", icon: "layout-panel-top", sections: MENUS_SECTIONS, anchors: { header: "site-header", footer: "site-footer" }, site: true },
 ];
 
 export const COLLECTIONS: CollectionDef[] = [

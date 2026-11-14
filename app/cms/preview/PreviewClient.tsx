@@ -19,11 +19,23 @@ import { FacilitiesView } from "../../[lang]/facilities-and-rates/FacilitiesView
 import { FaqView } from "../../[lang]/faq/[slug]/FaqView";
 import { FaqIndexView } from "../../[lang]/faq/FaqIndexView";
 import type { PublishedFaq, PublishedFaqs } from "@/lib/cms/faq-types";
+import type { MenusContent, PublishedMenus } from "@/lib/cms/menus";
+import { SiteFooter } from "@/components/SiteFooter";
+import { SiteHeader } from "@/components/SiteHeader";
+import { MenusProvider } from "@/lib/menus-context";
 
 /** Loads draft content from the CMS API and renders it with the website's own components, under a preview banner. */
 export function PreviewClient({ kind, collection, slug, anchors, back }: { kind: "page" | "item"; collection?: string; slug: string; anchors: Record<string, string>; back: string }) {
   const [data, setData] = useState<unknown>(null);
   const [error, setError] = useState("");
+  // Every preview shows the live header and footer; the "Header and footer" preview shows their drafts.
+  const [menus, setMenus] = useState<MenusContent | null>(null);
+  useEffect(() => {
+    if (kind === "page" && slug === "menus") return;
+    fetch("/api/public/pages/menus")
+      .then(async (r) => r.ok && setMenus(((await r.json()) as PublishedMenus).content))
+      .catch(() => {});
+  }, [kind, slug]);
   useEffect(() => {
     const url = kind === "page" ? `/api/cms/pages/${slug}/preview` : `/api/cms/collections/${collection}/${slug}/preview`;
     fetch(url, { credentials: "same-origin" })
@@ -48,13 +60,24 @@ export function PreviewClient({ kind, collection, slug, anchors, back }: { kind:
   else if (data && kind === "page" && slug === "blog") view = <BlogIndex data={data as PublishedBlog} />;
   else if (data && kind === "page" && slug === "about-us") view = <AboutView data={data as PublishedAbout} />;
   else if (data && kind === "page" && slug === "facilities") view = <FacilitiesView data={data as PublishedFacilities} />;
+  else if (data && kind === "page" && slug === "menus")
+    view = (
+      <>
+        <SiteHeader />
+        <main style={{ minHeight: "60vh", display: "grid", placeItems: "center", padding: 40, font: "400 16px/1.5 var(--font-roboto)", color: "#686869", textAlign: "center" }}>
+          Page content goes here. Try the menus above and the footer below.
+        </main>
+        <SiteFooter />
+      </>
+    );
+  const menusNow = kind === "page" && slug === "menus" ? (data as PublishedMenus | null)?.content : menus;
 
   return (
     <>
       <div style={{ position: "fixed", left: "50%", bottom: 16, transform: "translateX(-50%)", zIndex: 900, background: "#ffbe18", color: "#202020", padding: "10px 16px", borderRadius: 999, font: "600 13px/1 Inter, sans-serif", boxShadow: "0 10px 15px #0003", whiteSpace: "nowrap" }}>
         Preview: unpublished drafts · <a href={back} style={{ color: "#202020" }}>Back to the CMS</a>
       </div>
-      {error ? <p style={{ padding: 40 }}>{error}</p> : view ?? <p style={{ padding: 40 }}>Loading preview…</p>}
+      {error ? <p style={{ padding: 40 }}>{error}</p> : view ? (menusNow ? <MenusProvider value={menusNow}>{view}</MenusProvider> : view) : <p style={{ padding: 40 }}>Loading preview…</p>}
     </>
   );
 }
