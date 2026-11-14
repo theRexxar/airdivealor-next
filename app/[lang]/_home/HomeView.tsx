@@ -58,7 +58,7 @@ export function HomeView({ data }: { data: PublishedHome }) {
       <Preloader />
       <div ref={rootRef} className="page home">
         <DepthGauge rootRef={rootRef} stops={stops} />
-        <SiteHeader current="home" />
+        <SiteHeader />
         <Hero c={c} h={h} showAwards={data.order.includes("awards")} bookVisible={data.order.includes("book")} pricesVisible={data.order.includes("prices")} />
         {data.order.map((k) => {
           switch (k) {

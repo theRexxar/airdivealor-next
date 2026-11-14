@@ -13,6 +13,7 @@ import { HOME_DEFAULTS } from "./home-defaults";
 import type { PublishedHome } from "./home-types";
 import { collectionTag, pageTag } from "./tags";
 import { FAQ_PAGE_DEFAULTS, FAQS_DEFAULTS } from "./faq-defaults";
+import { MENUS_DEFAULTS, type PublishedMenus } from "./menus";
 import { hasFaqPage, toFaqCard, type PublishedFaq, type PublishedFaqs } from "./faq-types";
 
 /** Where the website reaches the CMS API. Defaults to this same app. */
@@ -215,5 +216,17 @@ export async function getFaq(slug: string): Promise<PublishedFaq | null> {
     const others = FAQS_DEFAULTS.filter((x) => x !== faq);
     const more = others.filter((x) => x.category === faq.category).concat(others.filter((x) => x.category !== faq.category)).slice(0, 4).map(toFaqCard);
     return { faq, more, texts: FAQ_PAGE_DEFAULTS.detail, media: {}, publishedAt: null };
+  }
+}
+
+export const FALLBACK_MENUS: PublishedMenus = { content: MENUS_DEFAULTS, publishedAt: null };
+
+/** Header and footer menus, shown on every page. */
+export async function getMenus(): Promise<PublishedMenus> {
+  try {
+    return (await cmsGet<PublishedMenus>("/api/public/pages/menus", [pageTag("menus")])) ?? FALLBACK_MENUS;
+  } catch (e) {
+    warn("menus", e);
+    return FALLBACK_MENUS;
   }
 }

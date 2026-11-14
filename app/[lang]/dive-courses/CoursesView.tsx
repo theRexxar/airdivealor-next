@@ -16,7 +16,7 @@ export function CoursesView({ data }: { data: PublishedCourses }) {
   const h = useContent(data.media);
   return (
     <div className="page">
-      <SiteHeader current="courses" />
+      <SiteHeader />
       {data.order.map((k) => {
         if (k === "hero") return <Hero key={k} data={data} h={h} />;
         if (k === "list") return <List key={k} data={data} h={h} />;

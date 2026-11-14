@@ -19,7 +19,7 @@ export function BlogIndex({ data }: { data: PublishedBlog }) {
   const heroShown = data.order.includes("hero") && !!feat;
   return (
     <div className="page">
-      <SiteHeader current="blog" />
+      <SiteHeader />
       {data.order.map((k) => {
         if (k === "hero" && feat) return <Hero key={k} data={data} h={h} feat={feat} />;
         if (k === "stories") return <Stories key={k} data={data} h={h} skip={heroShown ? feat : null} />;

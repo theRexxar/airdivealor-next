@@ -19,7 +19,7 @@ export function AboutView({ data }: { data: PublishedAbout }) {
   const c = data.content;
   return (
     <div className="page">
-      <SiteHeader current="about" />
+      <SiteHeader />
       {data.order.map((k) => {
         if (k === "hero") return <Hero key={k} c={c} h={h} />;
         if (k === "story") return <Story key={k} c={c} h={h} />;

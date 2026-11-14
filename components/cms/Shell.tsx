@@ -9,7 +9,8 @@ import { api } from "@/lib/cms/client";
 import { useCmsUser } from "./CmsUser";
 
 const NAV: { group: string; items: { href: string; label: string; icon: IconName; perm: string }[] }[] = [
-  { group: "Pages", items: PAGES.map((p) => ({ href: `/cms/pages/${p.slug}`, label: p.label, icon: asIcon(p.icon), perm: `${p.slug}.view` })) },
+  { group: "Pages", items: PAGES.filter((p) => !p.site).map((p) => ({ href: `/cms/pages/${p.slug}`, label: p.label, icon: asIcon(p.icon), perm: `${p.slug}.view` })) },
+  { group: "Site", items: PAGES.filter((p) => p.site).map((p) => ({ href: `/cms/pages/${p.slug}`, label: p.label, icon: asIcon(p.icon), perm: `${p.slug}.view` })) },
   { group: "Content", items: COLLECTIONS.map((c) => ({ href: `/cms/collections/${c.key}`, label: c.label, icon: asIcon(c.icon), perm: `${c.key}.view` })) },
   { group: "Bookings", items: [{ href: "/cms/enquiries", label: "Enquiries", icon: "inbox", perm: "enquiries.view" }] },
   { group: "Library", items: [{ href: "/cms/media", label: "Media", icon: "images", perm: "media.view" }] },

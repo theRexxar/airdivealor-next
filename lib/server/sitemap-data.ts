@@ -22,7 +22,7 @@ const isPageCollection = (c: string): c is PageCollection => c in COLLECTION_SEC
 const sectionOfPage = (href: string): Section => (href === "/" ? "home" : sectionOf(href.split("/")[1])!.section);
 
 export async function publicUrls(): Promise<PublicUrl[]> {
-  const pages: PublicUrl[] = PAGES.map((p) => ({
+  const pages: PublicUrl[] = PAGES.filter((p) => !p.site).map((p) => ({
     alternates: pageAlternates(sectionOfPage(p.href)),
     kind: "page",
     priority: p.href === "/" ? 1 : 0.8,
@@ -35,7 +35,7 @@ export async function publicUrls(): Promise<PublicUrl[]> {
       .from(schema.pageSections)
       .innerJoin(schema.pages, eq(schema.pages.id, schema.pageSections.pageId));
     for (const p of pages) {
-      const slug = PAGES.find((x) => pageAlternates(sectionOfPage(x.href)).en === p.alternates.en)!.slug;
+      const slug = PAGES.find((x) => !x.site && pageAlternates(sectionOfPage(x.href)).en === p.alternates.en)!.slug;
       const times = sections.filter((s) => s.slug === slug && s.publishedAt).map((s) => s.publishedAt!.getTime());
       if (times.length) p.lastModified = new Date(Math.max(...times));
     }

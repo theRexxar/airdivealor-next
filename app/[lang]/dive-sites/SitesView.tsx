@@ -17,7 +17,7 @@ export function SitesView({ data }: { data: PublishedDiveSites }) {
   const c = data.content;
   return (
     <div className="page">
-      <SiteHeader current="diveSites" />
+      <SiteHeader />
       {data.order.map((k) => {
         switch (k) {
           case "hero":

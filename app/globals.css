@@ -429,3 +429,8 @@ span.wide-only, span.narrow-only { display: contents; }
 .tw-field__select { cursor: pointer; padding-right: var(--space-4); }
 .tw-field__control--select .tw-field__icon { pointer-events: none; }
 section[id] { scroll-margin-top: 64px; }
+
+/* Menus and buttons on the website: every word starts with a capital letter ("Dive Sites", "Send Enquiry"). The CMS keeps its own casing. */
+.site-nav > a, .site-nav__label, .site-nav__dropdown a, .mobile-nav a, .mobile-nav__group,
+.site-footer__col a, .site-footer__legal a, .tw-btn__label { text-transform: capitalize; }
+.cms .tw-btn__label { text-transform: none; }

@@ -1,7 +1,9 @@
 import type { Metadata, Viewport } from "next";
 import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
+import { getMenus } from "@/lib/cms/fetch";
 import { DEFAULT_SHARE_IMAGE } from "@/lib/cms/seo";
+import { MenusProvider } from "@/lib/menus-context";
 import { SITE_ICONS, SITE_MANIFEST } from "@/lib/icons";
 import { LangProvider } from "@/lib/i18n";
 import { isLocale } from "@/lib/i18n-routes";
@@ -31,10 +33,13 @@ export const viewport: Viewport = { themeColor: "#202020" };
 export default async function SiteLayout({ children, params }: { children: ReactNode; params: Promise<{ lang: string }> }) {
   const { lang } = await params;
   if (!isLocale(lang)) notFound();
+  const menus = await getMenus();
   return (
     <html lang={lang} className={fontClasses}>
       <body>
-        <LangProvider lang={lang}>{children}</LangProvider>
+        <LangProvider lang={lang}>
+          <MenusProvider value={menus.content}>{children}</MenusProvider>
+        </LangProvider>
       </body>
     </html>
   );

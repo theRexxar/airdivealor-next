@@ -14,6 +14,8 @@ import { FACILITIES_SCHEMAS } from "../lib/cms/facilities-sections";
 import { HOME_DEFAULTS } from "../lib/cms/home-defaults";
 import { HOME_SCHEMAS } from "../lib/cms/home-sections";
 import { SITE_SCHEMA } from "../lib/cms/site-fields";
+import { schemaFor } from "../lib/cms/fields";
+import { MENUS_DEFAULTS, MENUS_SECTIONS } from "../lib/cms/menus";
 
 let ok = true;
 const check = (label: string, schema: { safeParse: (v: unknown) => { success: boolean; error?: { issues: unknown[] } } }, value: unknown) => {
@@ -29,6 +31,7 @@ for (const [k, s] of Object.entries(FACILITIES_SCHEMAS)) check(`facilities.${k}`
 for (const [k, s] of Object.entries(COURSES_SCHEMAS)) check(`dive-courses.${k}`, s, (COURSES_PAGE_DEFAULTS as unknown as Record<string, unknown>)[k]);
 for (const [k, s] of Object.entries(ABOUT_SCHEMAS)) check(`about-us.${k}`, s, (ABOUT_DEFAULTS as unknown as Record<string, unknown>)[k]);
 for (const [k, s] of Object.entries(BLOG_SCHEMAS)) check(`blog.${k}`, s, (BLOG_DEFAULTS as unknown as Record<string, unknown>)[k]);
+for (const s of MENUS_SECTIONS) check(`menus.${s.key}`, schemaFor(s.fields), (MENUS_DEFAULTS as unknown as Record<string, unknown>)[s.key]);
 POSTS_DEFAULTS.forEach((x) => check(`post ${x.slug}`, POST_SCHEMA, x));
 CATEGORIES_DEFAULTS.forEach((x) => check(`category ${x.slug}`, CATEGORY_SCHEMA, x));
 COURSES_DEFAULTS.forEach((x) => check(`course ${x.slug}`, COURSE_SCHEMA, x));
