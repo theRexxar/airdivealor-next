@@ -4,7 +4,7 @@
 
 /* Loading screen */
 @keyframes ada-spin { to { transform: rotate(360deg); } }
-@keyframes ada-pulse { 0%, 100% { opacity: 1; } 50% { opacity: .55; } }
+@keyframes ada-pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: .85; transform: scale(.94); } }
 .preloader {
   position: fixed; inset: 0; z-index: 1000; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px;
   background: #ffffff; opacity: 1; transition: opacity .5s ease;
@@ -12,7 +12,7 @@
 .preloader[data-out] { opacity: 0; pointer-events: none; }
 .preloader__mark { position: relative; width: 168px; height: 168px; }
 .preloader__ring { position: absolute; inset: 0; animation: ada-spin 1.2s linear infinite; }
-.preloader__logo { position: absolute; left: 34px; top: 34px; width: 100px; height: 100px; object-fit: contain; animation: ada-pulse 1.6s ease-in-out infinite; }
+.preloader__logo { position: absolute; left: 36px; top: 41px; width: 96px; height: 86px; object-fit: contain; animation: ada-pulse 1.6s ease-in-out infinite; }
 @media (prefers-reduced-motion: reduce) { .preloader__ring, .preloader__logo { animation: none; } }
 
 /* Depth gauge (1100px and up) */
