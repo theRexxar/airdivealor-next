@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 /** Shown once per visit: true after the first home-page load finished, so client-side returns skip it. */
 let loadedOnce = false;
 
-/** Full-screen loading screen with the Air Dive Alor logo inside a spinning ring; fades out after the page loads (at least 1.4 s). */
+/** Full-screen loading screen with the black Air Dive Alor logo (mark and wordmark) inside a spinning ring; fades out after the page loads (at least 1.4 s). */
 export function Preloader() {
   const [show, setShow] = useState(() => !loadedOnce);
   const [out, setOut] = useState(false);
@@ -45,7 +45,7 @@ export function Preloader() {
           <circle cx={84} cy={84} r={78} fill="none" stroke="#e6e6e6" strokeWidth={3} />
           <circle cx={84} cy={84} r={78} fill="none" stroke="#111111" strokeWidth={3} strokeLinecap="round" strokeDasharray="120 370" />
         </svg>
-        <img src="/brand/logo-loader.png" alt="Air Dive Alor" className="preloader__logo" />
+        <img src="/brand/logo-air-dive-alor-black.png" srcSet="/brand/logo-air-dive-alor-black.png 600w, /brand/logo-air-dive-alor-black@2x.png 1200w" sizes="96px" alt="Air Dive Alor" width={96} height={86} className="preloader__logo" />
       </div>
     </div>
   );
