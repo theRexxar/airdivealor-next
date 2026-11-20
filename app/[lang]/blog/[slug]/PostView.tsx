@@ -3,7 +3,9 @@
 import { useItemHref } from "@/lib/i18n";
 import Link from "@/components/LocalLink";
 import { useEffect, useRef, useState } from "react";
+import { Lightbox } from "@/components/Lightbox";
 import { PostCard } from "@/components/PostCard";
+import { useZoomPhotos } from "@/components/useZoomPhotos";
 import { RichText } from "@/components/RichText";
 import { SiteFooter } from "@/components/SiteFooter";
 import { SiteHeader } from "@/components/SiteHeader";
@@ -30,6 +32,10 @@ export function PostView({ data }: { data: PublishedPost }) {
   useEffect(() => {
     document.title = `${title} | Air Dive Alor`;
   }, [title]);
+
+  // Photos in the story (single photos, galleries, pictures in rich text) open full screen.
+  const body = useRef<HTMLDivElement>(null);
+  const zoom = useZoomPhotos(body, ".prose-figure img, .prose-gallery img, .rich img", [p.body, lang], (alt) => (lang === "ID" ? `Perbesar foto: ${alt}` : `Enlarge photo: ${alt}`));
 
   const shareWA = () => window.open("https://api.whatsapp.com/send/?text=" + encodeURIComponent(p.title.en + " " + window.location.href), "_blank", "noopener");
   const copyLink = () => {
@@ -86,7 +92,11 @@ export function PostView({ data }: { data: PublishedPost }) {
         <section className="post-body">
           <div className="post-body__inner">
             {p.body.length > 0 ? (
-              p.body.map((b, k) => <Block key={k} block={b} h={h} media={data.media} fallbackAlt={title} />)
+              <div ref={body} className="post-body__content">
+                {p.body.map((b, k) => (
+                  <Block key={k} block={b} h={h} media={data.media} fallbackAlt={title} />
+                ))}
+              </div>
             ) : (
               <>
                 <p className="prose-p">{L(p.excerpt)}</p>
@@ -129,6 +139,7 @@ export function PostView({ data }: { data: PublishedPost }) {
           </div>
         </section>
       </article>
+      <Lightbox photos={zoom.photos} index={zoom.index} onChange={zoom.onChange} />
 
       {data.more.length > 0 && (
         <section className="section more-stories">
