@@ -103,6 +103,20 @@ Before `media.airdivealor.com` is live, you can test with MinIO's Railway domain
 5. Update `MINIO_API_CORS_ALLOW_ORIGIN` to `https://airdivealor.com` if you changed it for testing, and confirm `SITE_URL`, `S3_UPLOAD_ENDPOINT` and `S3_PUBLIC_URL` use the real domains.
 6. When the certificates show as issued in Railway, check the site, the CMS sign-in, an upload, and a password-reset email.
 
+### Cloudflare in front: real visitor IPs and no way around it
+
+Rate limits (sign-in, password reset, booking form) count per visitor IP, and the activity log records it. Behind Cloudflare the app reads Cloudflare's `CF-Connecting-IP`, which visitors can't fake. Without the steps below it does that too. The steps close the remaining gap: someone calling the Railway address directly, skipping Cloudflare and its DDoS protection, and sending a made-up `CF-Connecting-IP`.
+
+1. Make a secret: a long random value, e.g. `openssl rand -hex 32`. Keep it out of chats and tickets.
+2. **Cloudflare:** *Rules → Transform Rules → Modify Request Header → Create rule.* Name it `Origin secret`, apply it to **all incoming requests**, then *Set static*: header name `X-Origin-Secret`, value = the secret. Deploy it.
+3. **Railway, service web:** add the variable `CF_ORIGIN_SECRET` = the same secret. Railway redeploys.
+4. Check:
+   - `https://new.airdivealor.com/en` (through Cloudflare) opens as usual.
+   - `curl -sI https://<web>.up.railway.app/en` (the Railway address, skipping Cloudflare) answers **403**.
+   - Railway's health check (`/api/health`) is let through, so deploys still go live.
+
+Do step 2 **before** step 3: with the variable set and no rule in Cloudflare, every visitor gets 403. To switch the check off, remove the variable. To change the secret, update the Cloudflare rule first, then the variable (a few seconds of 403 for visitors in between).
+
 ### Booking enquiries
 
 The booking form saves every enquiry in the database and shows it in **CMS › Bookings › Enquiries**, with whether each email went out. The new table is created by `npm run db:migrate` on deploy. Run `npm run cms:seed` once afterwards so the Editor role gets the new "See booking enquiries" and "Change status, add notes and resend emails" permissions (Super admins have them already; other roles can be given them in *Roles and permissions*).
