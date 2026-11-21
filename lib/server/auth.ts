@@ -1,3 +1,4 @@
+import { clientIp } from "@/lib/client-ip";
 import bcrypt from "bcryptjs";
 import { createHash, randomBytes } from "node:crypto";
 import { and, eq, gt, inArray } from "drizzle-orm";
@@ -30,7 +31,7 @@ export interface CmsUser {
 
 export async function clientInfo() {
   const h = await headers();
-  return { ip: (h.get("x-forwarded-for") ?? "").split(",")[0].trim() || h.get("x-real-ip") || "", userAgent: (h.get("user-agent") ?? "").slice(0, 255) };
+  return { ip: clientIp(h), userAgent: (h.get("user-agent") ?? "").slice(0, 255) };
 }
 
 export async function createSession(userId: number) {

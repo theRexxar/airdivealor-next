@@ -1,4 +1,5 @@
 import { headers } from "next/headers";
+import { ORIGIN_SECRET_HEADER, originSecret } from "../client-ip";
 import { ABOUT_DEFAULTS } from "./about-defaults";
 import { toCard, type PublishedBlog, type PublishedPost } from "./blog-cms-types";
 import { BLOG_DEFAULTS, CATEGORIES_DEFAULTS, POSTS_DEFAULTS } from "./blog-defaults";
@@ -30,7 +31,14 @@ async function apiBase() {
  * (the CMS expires these tags). Returns null on 404; throws if the CMS can't be reached.
  */
 async function cmsGet<T>(path: string, tags: string[]): Promise<T | null> {
-  const res = await fetch(`${await apiBase()}${path}`, { cache: "force-cache", next: { revalidate: 300, tags }, signal: AbortSignal.timeout(5000) });
+  // The site calls its own API, not through Cloudflare: show the origin secret so proxy.ts lets it in.
+  const secret = originSecret();
+  const res = await fetch(`${await apiBase()}${path}`, {
+    cache: "force-cache",
+    next: { revalidate: 300, tags },
+    signal: AbortSignal.timeout(5000),
+    headers: secret ? { [ORIGIN_SECRET_HEADER]: secret } : undefined,
+  });
   if (res.status === 404) return null;
   if (!res.ok) throw new Error(`CMS API answered ${res.status}`);
   return (await res.json()) as T;
