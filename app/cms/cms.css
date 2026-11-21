@@ -16,29 +16,62 @@
 .cms-auth__row { display: flex; justify-content: space-between; align-items: center; gap: 12px; font-size: 14px; }
 
 /* App shell */
-.cms-shell { display: grid; grid-template-columns: 248px minmax(0, 1fr); min-height: 100vh; }
+.cms-shell { display: grid; grid-template-columns: 248px minmax(0, 1fr); min-height: 100vh; transition: grid-template-columns 0.2s ease; }
 .cms-side { position: sticky; top: 0; height: 100vh; display: flex; flex-direction: column; gap: 4px; padding: 20px 14px; background: var(--neutral-900); color: #fff; overflow-y: auto; }
 .cms-side__brand { display: flex; align-items: center; gap: 10px; padding: 4px 10px 20px; }
 .cms-side__brand img { height: 48px; width: auto; }
 .cms-side__brand span { font: 600 13px/1.2 var(--font-inter); color: var(--neutral-400); }
 .cms-side__group { padding: 16px 10px 6px; font: 500 11px/1 var(--font-roboto); letter-spacing: 0.14em; text-transform: uppercase; color: var(--neutral-500); }
-.cms-side a.cms-nav { display: flex; gap: 10px; align-items: center; padding: 10px; border-radius: var(--radius-md); color: var(--neutral-200); text-decoration: none; font: 500 14px/1 var(--font-roboto); }
-.cms-side a.cms-nav:hover { background: rgba(255, 255, 255, 0.06); color: #fff; }
+/* Sidebar items are links and buttons; selectors name the tag so they beat ".cms a:not(.tw-btn)" (blue links). */
+.cms-side a.cms-nav, .cms-side button.cms-nav { all: unset; box-sizing: border-box; cursor: pointer; }
+.cms-side .cms-nav:focus-visible, .cms-side__links > *:focus-visible, .cms-side__who:focus-visible { outline: 2px solid var(--primary-300); outline-offset: 2px; border-radius: var(--radius-md); }
+.cms-side a.cms-nav, .cms-side button.cms-nav { display: flex; gap: 10px; align-items: center; padding: 10px; border-radius: var(--radius-md); color: var(--neutral-200); text-decoration: none; font: 500 14px/1 var(--font-roboto); }
+.cms-side a.cms-nav:hover, .cms-side button.cms-nav:hover { background: rgba(255, 255, 255, 0.06); color: #fff; }
 .cms-side a.cms-nav[aria-current="page"] { background: var(--primary-500); color: #fff; }
-.cms-side__foot { margin-top: auto; padding: 12px 10px 0; border-top: 1px solid var(--neutral-700); display: flex; flex-direction: column; gap: 10px; }
+.cms-side button.cms-side__fold { margin-top: auto; color: var(--neutral-400); }
+.cms-side button.cms-side__fold:hover { color: #fff; }
+.cms-side__foot { margin-top: 8px; padding: 12px 10px 0; border-top: 1px solid var(--neutral-700); display: flex; flex-direction: column; gap: 10px; }
+.cms-side__who { display: flex; gap: 10px; align-items: center; min-width: 0; }
+.cms-side__who > .cms-side__text { min-width: 0; }
+.cms-side__avatar { flex: none; width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; background: var(--neutral-700); color: #fff; font: 600 12px/1 var(--font-inter); }
+.cms-side__links { align-items: center; }
+.cms-side__links .cms-side__linkicon { display: none; }
 .cms-side__user { font: 500 14px/1.3 var(--font-roboto); color: #fff; }
 .cms-side__role { font: 400 12px/1.3 var(--font-roboto); color: var(--neutral-400); }
 .cms-side__links { display: flex; gap: 12px; flex-wrap: wrap; }
-.cms-side__links a, .cms-side__links button { all: unset; cursor: pointer; font: 500 13px/1 var(--font-roboto); color: var(--neutral-300); }
-.cms-side__links a:hover, .cms-side__links button:hover { color: #fff; }
+.cms-side .cms-side__links a, .cms-side .cms-side__links button { all: unset; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; font: 500 13px/1 var(--font-roboto); color: var(--neutral-300); }
+.cms-side .cms-side__links a:hover, .cms-side .cms-side__links button:hover { color: #fff; }
 .cms-main { min-width: 0; padding: clamp(20px, 3vw, 40px); display: flex; flex-direction: column; gap: 24px; }
 .cms-mobilebar { display: none; }
+
+/* Folded sidebar (wide screens): icons only; labels show as tooltips (.cms-tip, placed by Shell.tsx). */
+@media (min-width: 901px) {
+  .cms-shell[data-folded] { grid-template-columns: 72px minmax(0, 1fr); }
+  .cms-side[data-folded] { padding: 20px 12px; align-items: center; }
+  .cms-side[data-folded] .cms-side__text { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .cms-side[data-folded] .cms-side__brand { padding: 4px 0 16px; justify-content: center; }
+  .cms-side[data-folded] .cms-side__brand img { height: 34px; }
+  .cms-side[data-folded] > div { width: 100%; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  .cms-side[data-folded] .cms-side__group { width: 32px; padding: 0; margin: 12px 0 8px; border-top: 1px solid var(--neutral-700); }
+  .cms-side[data-folded] a.cms-nav, .cms-side[data-folded] button.cms-nav { width: 44px; height: 40px; padding: 0; justify-content: center; }
+  .cms-side[data-folded] .cms-side__foot { width: 100%; padding: 12px 0 0; align-items: center; }
+  .cms-side[data-folded] .cms-side__links { flex-direction: column; gap: 4px; }
+  .cms-side[data-folded] .cms-side__links > a, .cms-side[data-folded] .cms-side__links > button { width: 44px; height: 36px; justify-content: center; border-radius: var(--radius-md); }
+  .cms-side[data-folded] .cms-side__links > *:hover { background: rgba(255, 255, 255, 0.06); }
+  .cms-side[data-folded] .cms-side__links .cms-side__linkicon { display: block; }
+}
+.cms-tip {
+  position: fixed; z-index: 300; transform: translateY(-50%); pointer-events: none; white-space: nowrap;
+  padding: 6px 10px; border-radius: var(--radius-md); background: var(--neutral-800); color: #fff;
+  font: 500 13px/1.2 var(--font-roboto); box-shadow: var(--shadow-lg); border: 1px solid var(--neutral-700);
+}
 @media (max-width: 900px) {
   .cms-shell { grid-template-columns: 1fr; }
   .cms-side { position: fixed; inset: 0 auto 0 0; width: 264px; z-index: 100; transform: translateX(-100%); transition: transform .2s; }
   .cms-side[data-open] { transform: none; box-shadow: var(--shadow-2xl); }
   .cms-mobilebar { display: flex; align-items: center; gap: 12px; padding: 10px 16px; background: var(--neutral-900); color: #fff; position: sticky; top: 0; z-index: 50; }
   .cms-mobilebar span { font: 600 14px/1 var(--font-inter); }
+  .cms-side__fold { display: none !important; }
 }
 
 /* Page header */
