@@ -2,8 +2,8 @@ import { HOME_DEFAULTS } from "@/lib/cms/home-defaults";
 import type { HomeContent } from "@/lib/cms/home-types";
 import { enquirySchema } from "@/lib/enquiry";
 import { clientInfo } from "@/lib/server/auth";
-import { createEnquiry, sendCustomerEmail, sendTeamEmail, type EnquiryRow } from "@/lib/server/enquiry-service";
-import { body, handle, HttpError, ok, rateLimit } from "@/lib/server/http";
+import { createEnquiry, holdCustomerEmail, sendCustomerEmail, sendTeamEmail, type EnquiryRow } from "@/lib/server/enquiry-service";
+import { body, handle, hit, HttpError, ok, rateLimit } from "@/lib/server/http";
 import { pageContent } from "@/lib/server/page-service";
 
 /**
@@ -11,15 +11,20 @@ import { pageContent } from "@/lib/server/page-service";
  * 1. Saved in the database, so it shows in CMS › Enquiries even if email fails.
  * 2. Emailed to the team (replies go to the customer), then a copy to the customer in their language.
  *    Each email's result is recorded on the enquiry.
+ * Spam protection: limits per visitor and for the whole site, and the customer's copy (an email to an
+ * address typed into the form) goes at most 3 times a day to one address and 30 times an hour overall.
+ * It never repeats the free-text message, so the form can't be used to send someone else a text.
  * Prices come from the published Home page, not from the browser. The visitor only sees "sent" when the
  * enquiry reached the team somehow (saved, or emailed); otherwise they are pointed to WhatsApp.
  */
 export const POST = handle(async (req) => {
   const client = await clientInfo();
+  const busy = "We are receiving a lot of enquiries right now. Please message us on WhatsApp instead, or try again later.";
   await rateLimit(`enquiry:${client.ip || "unknown"}`, 5, 15 * 60);
   const e = await body(req, enquirySchema);
-  // Bots fill the hidden field: answer as if sent, keep and send nothing.
+  // Bots fill the hidden field: answer as if sent, keep and send nothing (before counting site-wide).
   if (e.website) return ok({ ok: true, ref: null, copySent: true });
+  await rateLimit("enquiry:all", 60, 60 * 60, busy);
 
   // The published prices; the built-in ones if the database can't be read (as the website itself does).
   let home: HomeContent;
@@ -56,7 +61,12 @@ export const POST = handle(async (req) => {
     console.error(`[enquiry] NOT DELIVERED from ${e.name} <${e.email}> ${e.phone} · ${pkg.name.en} · ${e.arrival} · ${e.divers} divers · ${e.message.slice(0, 200)}`);
     throw new HttpError(503, "We couldn't send your enquiry right now. Please message us on WhatsApp instead, or try again in a few minutes.");
   }
-  const copy = await sendCustomerEmail(r, saved);
+  const to = e.email.trim().toLowerCase();
+  const copy = !(await hit(`enquiry:to:${to}`, 3, 24 * 60 * 60))
+    ? await holdCustomerEmail(r, saved, "more than 3 enquiries for this email address today")
+    : !(await hit("enquiry:copies", 30, 60 * 60))
+      ? await holdCustomerEmail(r, saved, "more than 30 customer copies in the last hour")
+      : await sendCustomerEmail(r, saved);
   if (copy.status !== "sent") console.error(`[enquiry] customer copy ${copy.status}${saved ? ` for #${r.id}` : ""}: ${copy.error ?? ""}`);
 
   return ok({ ok: true, ref: saved ? r.id : null, copySent: copy.status === "sent" });

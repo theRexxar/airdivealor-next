@@ -68,11 +68,16 @@ export async function requireUser(permission?: string): Promise<CmsUser> {
   return u;
 }
 
-/** Fixed-window rate limit in Redis. */
-export async function rateLimit(key: string, limit: number, windowSec: number) {
+/** Fixed-window rate limit in Redis: answers 429 once `limit` requests were made in the window. */
+export async function rateLimit(key: string, limit: number, windowSec: number, message = "Too many attempts. Please wait a few minutes and try again.") {
+  if (!(await hit(key, limit, windowSec))) throw new HttpError(429, message);
+}
+
+/** Count one use of `key` in a fixed window; false once `limit` uses were made (the caller decides what to do). */
+export async function hit(key: string, limit: number, windowSec: number): Promise<boolean> {
   const r = redis();
   const k = `rl:${key}`;
   const n = await r.incr(k);
   if (n === 1) await r.expire(k, windowSec);
-  if (n > limit) throw new HttpError(429, "Too many attempts. Please wait a few minutes and try again.");
+  return n <= limit;
 }

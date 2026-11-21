@@ -6,7 +6,7 @@ import { and, desc, eq, like, lt, or, sql, type SQL } from "drizzle-orm";
 import type { Enquiry } from "@/lib/enquiry";
 import { db, schema } from "./db";
 import type { EmailStatus } from "./db/schema";
-import { enquiryAdminEmail, enquiryCustomerEmail, type EnquiryEmailData } from "./emails";
+import { enquiryAdminEmail, enquiryCustomerEmail, looksLikeLink, type EnquiryEmailData } from "./emails";
 import { env } from "./env";
 import { sendMail } from "./mail";
 
@@ -97,11 +97,25 @@ export async function sendTeamEmail(r: EnquiryRow, saved = true): Promise<Outcom
 
 /** Email the customer their copy (replies go to the team) and record the result. */
 export async function sendCustomerEmail(r: EnquiryRow, saved = true): Promise<Outcome> {
-  const out = await send({ to: { email: r.email, name: r.name }, replyTo: { email: env.ENQUIRY_EMAIL, name: "Air Dive Alor" }, ...enquiryCustomerEmail(emailData(r)) });
+  const out = await send({ to: { email: r.email, name: looksLikeLink(r.name) ? undefined : r.name }, replyTo: { email: env.ENQUIRY_EMAIL, name: "Air Dive Alor" }, ...enquiryCustomerEmail(emailData(r)) });
   if (saved)
     await db
       .update(schema.enquiries)
       .set({ customerEmail: out.status, customerEmailId: out.messageId ?? null, customerEmailError: out.error ?? null, customerEmailAt: new Date() })
+      .where(eq(schema.enquiries.id, r.id));
+  return out;
+}
+
+/**
+ * Record that the customer's copy was held back (spam protection: too many copies to this address, or
+ * to anyone in the last hour). The team still has the enquiry; "Send now" in the CMS sends the copy.
+ */
+export async function holdCustomerEmail(r: EnquiryRow, saved: boolean, reason: string): Promise<Outcome> {
+  const out: Outcome = { status: "failed", error: `Not sent automatically: ${reason} (spam protection). If the enquiry is genuine, use Send now.` };
+  if (saved)
+    await db
+      .update(schema.enquiries)
+      .set({ customerEmail: out.status, customerEmailId: null, customerEmailError: out.error ?? null, customerEmailAt: new Date() })
       .where(eq(schema.enquiries.id, r.id));
   return out;
 }
