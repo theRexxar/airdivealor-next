@@ -289,8 +289,19 @@ const diversLabel = (n: number, lang: "en" | "id") => (lang === "en" ? `${n} ${n
 const waNumber = (phone: string) => phone.replace(/[^\d]/g, "").replace(/^0/, "62");
 
 /** The customer's copy of their enquiry, in the language they used on the website. */
+/**
+ * Text that reads like a web address ("www.x.com", "http://", "x.top/y"). Typed by a visitor, it would turn
+ * into a clickable link in the email they get sent to an address of their choice.
+ */
+export const looksLikeLink = (s: string) => /https?:|www\.|[a-z0-9-]+\.(com|net|org|info|biz|io|co|me|xyz|top|site|online|link|click|shop|ru|cn|tk)\b/i.test(s);
+
+/**
+ * The customer's copy. It goes to an address typed into the public form, so it repeats only what the
+ * site chose (trip, dates, prices) and never the free-text message; a name that looks like a link is left out.
+ */
 export function enquiryCustomerEmail(d: EnquiryEmailData): Email {
   const site = d.siteUrl.replace(/\/$/, "");
+  const name = looksLikeLink(d.name) ? "" : d.name;
   const wa = `https://api.whatsapp.com/send/?phone=${d.whatsappNumber}`;
   const rows = (lang: "en" | "id"): [string, string][] => {
     const L = (en: string, id: string) => (lang === "en" ? en : id);
@@ -301,10 +312,10 @@ export function enquiryCustomerEmail(d: EnquiryEmailData): Email {
       [L("Camera", "Kamera"), d.camera ? L("Yes, bringing a camera", "Ya, bawa kamera") : L("No camera", "Tidak bawa kamera")],
       [L("Estimate", "Perkiraan"), d.estimate],
       [L("Deposit", "DP"), d.deposit],
-      [L("Name", "Nama"), d.name],
+      ...(name ? ([[L("Name", "Nama"), name]] as [string, string][]) : []),
       ["Email", d.email],
       ...(d.phone ? ([["WhatsApp", d.phone]] as [string, string][]) : []),
-      ...(d.message ? ([[L("Message", "Pesan"), d.message]] as [string, string][]) : []),
+      ...(d.message ? ([[L("Message", "Pesan"), L("Received, our team will read it", "Sudah kami terima, tim kami akan membacanya")]] as [string, string][]) : []),
     ];
   };
   return {
@@ -317,7 +328,7 @@ export function enquiryCustomerEmail(d: EnquiryEmailData): Email {
       en: {
         title: "We received your enquiry",
         paragraphs: [
-          `Hi ${d.name},`,
+          name ? `Hi ${name},` : "Hi,",
           "Thank you for planning your dive trip with us. This is a copy of the enquiry you sent from our website.",
           "We reply by email or WhatsApp **within 24 hours** with your quote and a deposit link. You pay the deposit only after we confirm your dates.",
         ],
@@ -328,7 +339,7 @@ export function enquiryCustomerEmail(d: EnquiryEmailData): Email {
       id: {
         title: "Permintaan Anda sudah kami terima",
         paragraphs: [
-          `Halo ${d.name},`,
+          name ? `Halo ${name},` : "Halo,",
           "Terima kasih sudah merencanakan liburan selam bersama kami. Ini salinan permintaan yang Anda kirim dari website kami.",
           "Kami balas lewat email atau WhatsApp **dalam 24 jam**, berisi penawaran harga dan link DP. Anda baru bayar DP setelah kami mengonfirmasi tanggal.",
         ],
